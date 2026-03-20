@@ -1,5 +1,6 @@
 ﻿using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,37 +12,32 @@ namespace FinanceSystem.Application.Services.ManagerServices
 {
     public class SalaryRequestService
     {
-        private readonly ISalaryProjectRequestRepository _requestRepository;
-        private readonly ILogRepository _logRepository;
-
-        public SalaryRequestService(ISalaryProjectRequestRepository requestRepository, ILogRepository logRepository) 
+        private readonly IUnitOfWork _unitOfWork;
+        public SalaryRequestService(IUnitOfWork unitOfWork)
         {
-            _requestRepository = requestRepository;
-            _logRepository = logRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public void ApproveSalaryRequest(Guid managerId, Guid requestId)
+        public async Task ApproveSalaryRequest(Guid managerId, Guid requestId)
         {
-            var request = _requestRepository.GetById(requestId);
+            var request = await _unitOfWork.SalaryRequests.GetByIdAsync(requestId);
             if (request == null)
                 throw new InvalidOperationException("Request not found");
 
             request.Approve();
-            _requestRepository.Update(request);
-
-            _logRepository.Add(SystemLog.Create(managerId, ActionType.Approve, requestId, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Approve, requestId, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RejectSalaryRequest(Guid managerId, Guid requestId)
+        public async Task RejectSalaryRequest(Guid managerId, Guid requestId)
         {
-            var request = _requestRepository.GetById(requestId);
+            var request = await _unitOfWork.SalaryRequests.GetByIdAsync(requestId);
             if (request == null)
                 throw new InvalidOperationException("Request not found");
 
             request.Reject();
-            _requestRepository.Update(request);
-
-            _logRepository.Add(SystemLog.Create(managerId, ActionType.Reject, requestId, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Reject, requestId, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

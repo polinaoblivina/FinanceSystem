@@ -1,5 +1,6 @@
 ﻿using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,24 +12,16 @@ namespace FinanceSystem.Application.Services.ClientServices
 {
     public class DepositService
     {
-        private readonly IDepositRepository _depositRepository;
-        private readonly IBankRepository _bankRepository;
-        private readonly ILogRepository _logRepository;
-        private readonly IAccountRepository _accountRepository;
-        private readonly ITransactionRepository _transactionRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DepositService(IDepositRepository depositRepository, ILogRepository logRepository, IBankRepository bankRepository, IAccountRepository accountRepository, ITransactionRepository transactionRepository)
+        public DepositService(IUnitOfWork unitOfWork)
         {
-            _depositRepository = depositRepository;
-            _logRepository = logRepository;
-            _bankRepository = bankRepository;
-            _accountRepository = accountRepository;
-            _transactionRepository = transactionRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public Deposit CreateDeposit(Guid clientId, Guid accountId, decimal amount, double rate, DepositType type)
+        public async Task<Deposit> CreateDeposit(Guid clientId, Guid accountId, decimal amount, double rate, DepositType type)
         {
-            var account = _accountRepository.GetById(accountId);
+            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
@@ -37,26 +30,25 @@ namespace FinanceSystem.Application.Services.ClientServices
             account.DecreaseBalance(amount);
             var deposit = Deposit.CreateNew(clientId, account.BankId, amount, rate, type);
 
-            _accountRepository.Update(account);
-            _depositRepository.Add(deposit);
+            await _unitOfWork.Deposits.AddAsync(deposit);
 
             var transaction = Transaction.CreateNew(accountId, deposit.Id, amount,TransactionType.TransferAccountToDeposit);
+            await _unitOfWork.Transactions.AddAsync(transaction);
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Create, deposit.Id, LogTargetType.Deposit));
 
-            _transactionRepository.Add(transaction);
-
-            _logRepository.Add(SystemLog.Create(clientId, ActionType.Create, deposit.Id, LogTargetType.Deposit));
+            await _unitOfWork.SaveChangesAsync();
             return deposit;
         }
 
-        public void CloseDeposit(Guid clientId, Guid depositId, Guid accountId)
+        public async Task CloseDeposit(Guid clientId, Guid depositId, Guid accountId)
         {
-            var deposit = _depositRepository.GetById(depositId);
+            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
             if (deposit == null)
                 throw new InvalidOperationException("Deposit not found");
             if (deposit.ClientId != clientId)
                 throw new InvalidOperationException("Not your deposit");
 
-            var account = _accountRepository.GetById(accountId);
+            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
@@ -66,28 +58,28 @@ namespace FinanceSystem.Application.Services.ClientServices
             deposit.Close();
             account.IncreaseBalance(amount);
 
-            _depositRepository.Update(deposit);
-            _accountRepository.Update(account);
 
             var transaction = Transaction.CreateNew(depositId, accountId, amount, TransactionType.TransferDepositToAccount);
-            _transactionRepository.Add(transaction);
+            await _unitOfWork.Transactions.AddAsync(transaction);
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Close, depositId, LogTargetType.Deposit));
 
-            _logRepository.Add(SystemLog.Create(clientId, ActionType.Close, depositId, LogTargetType.Deposit));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void AccrueInterest(Guid clientId, Guid depositId)
+        public async Task AccrueInterest(Guid clientId, Guid depositId)
         {
-            var deposit = _depositRepository.GetById(depositId);
+            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
 
             if (deposit == null)
                 throw new InvalidOperationException("Deposit not found");
 
             if (deposit.ClientId != clientId)
                 throw new UnauthorizedAccessException("This deposit does not belong to you");
-            deposit.AccrueInterest();
-            _depositRepository.Update(deposit);
 
-            _logRepository.Add(SystemLog.Create(clientId, ActionType.AccrueInterest, depositId, LogTargetType.Deposit));
+            deposit.AccrueInterest();
+
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.AccrueInterest, depositId, LogTargetType.Deposit));
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

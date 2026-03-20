@@ -14,6 +14,7 @@ namespace FInanceSystem.Domain.Entities
         public Guid EnterpriseId { get; private set; }
         public RequestStatus Status { get; private set; }
 
+        private SalaryProjectRequest() { }
         private SalaryProjectRequest(Guid id, Guid clientId, Guid enterpriseId, RequestStatus status)
         {
             if (id == Guid.Empty)

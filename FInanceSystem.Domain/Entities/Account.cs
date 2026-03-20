@@ -16,6 +16,7 @@ namespace FInanceSystem.Domain.Entities
         public decimal Balance { get; private set; }
         public AccountStatus Status { get; private set; }
 
+        private Account() { }
         private Account(Guid id, Guid clientId, Guid bankId, decimal balance, AccountStatus status)
         {
             if (id == Guid.Empty)

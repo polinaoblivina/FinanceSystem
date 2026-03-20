@@ -1,4 +1,5 @@
 ﻿using FInanceSystem.Domain.Entities;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -10,12 +11,14 @@ namespace FinanceSystem.Application.Services.AdminServices
 {
     public class LogViewerService
     {
-        private readonly ILogRepository _logRepository;
-        public LogViewerService(ILogRepository logRepository)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public LogViewerService(IUnitOfWork unitOfWork)
         {
-            _logRepository = logRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public List<SystemLog> GetAllLogs() => _logRepository.GetAll();
+        public async Task<List<SystemLog>> GetAllLogs()
+            => await _unitOfWork.Logs.GetAllAsync();
     }
 }

@@ -16,6 +16,7 @@ namespace FInanceSystem.Domain.Entities
         public TransactionType Type { get; private set; }
         public DateTime Timestamp { get; private set; }
 
+        private Transaction() { }
         private Transaction(Guid id, Guid fromId, Guid toId, decimal amount, TransactionType type, DateTime timestamp)
         {
             if (id == Guid.Empty)

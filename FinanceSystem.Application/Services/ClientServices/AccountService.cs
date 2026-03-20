@@ -1,6 +1,7 @@
 ﻿using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Repositories;
+using FInanceSystem.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,54 +12,48 @@ namespace FinanceSystem.Application.Services.ClientServices
 {
     public class AccountService
     {
-        private readonly IAccountRepository _accountRepository;
-        private readonly ITransactionRepository _transactionRepository;
-        private readonly IBankRepository _bankRepository;
-        private readonly ILogRepository _logRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public AccountService(IAccountRepository accountRepository, ITransactionRepository transactionRepository, ILogRepository logRepository, IBankRepository bankRepository)
+        public AccountService(IUnitOfWork unitOfWork)
         {
-            _accountRepository = accountRepository;
-            _transactionRepository = transactionRepository;
-            _logRepository = logRepository;
-            _bankRepository = bankRepository;
+            _unitOfWork = unitOfWork;
         }
-        public Account OpenAccount(Guid clientId, Guid bankId)
+        public async Task<Account> OpenAccount(Guid clientId, Guid bankId)
         {
-            var bank = _bankRepository.GetById(bankId);
+            var bank = await _unitOfWork.Banks.GetByIdAsync(bankId);
             if (bank == null)
                 throw new InvalidOperationException("Bank not found");
 
             var account = Account.CreateNew(clientId, bankId);
-            _accountRepository.Add(account);
+            await _unitOfWork.Accounts.AddAsync(account);
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Create, account.Id, LogTargetType.Account));
 
-            _logRepository.Add(SystemLog.Create(clientId, ActionType.Create, account.Id, LogTargetType.Account));
-
+            await _unitOfWork.SaveChangesAsync();
             return account;
         }
 
-        public void CloseAccount(Guid clientId, Guid accountId)
+        public async Task CloseAccount(Guid clientId, Guid accountId)
         {
-            var account = _accountRepository.GetById(accountId);
+            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
             account.Close();
-            _accountRepository.Update(account);
 
-            _logRepository.Add(SystemLog.Create(clientId, ActionType.Close, accountId, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Close, accountId, LogTargetType.Account));
+            await _unitOfWork.SaveChangesAsync();
         }
-        public List<Transaction> GetTransactions(Guid clientId, Guid accountId)
+        public async Task<List<Transaction>> GetTransactions(Guid clientId, Guid accountId)
         {
-            var account = _accountRepository.GetById(accountId);
+            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
-            return _transactionRepository.GetByTarget(accountId);
+            return await _unitOfWork.Transactions.GetByAccountIdAsync(accountId);
         }
     }
 }

@@ -9,7 +9,9 @@ namespace FInanceSystem.Domain.Entities
     public class Enterprise
     {
         public Guid Id { get; private set; }
-        public string Name { get; private set; }
+        public string? Name { get; private set; }
+
+        private Enterprise() { }
         private Enterprise(Guid id, string name) 
         {
             if (id == Guid.Empty)

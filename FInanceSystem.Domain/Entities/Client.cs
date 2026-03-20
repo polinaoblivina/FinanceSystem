@@ -9,7 +9,7 @@ namespace FInanceSystem.Domain.Entities
     public class Client : User
     {
         public bool IsApprovedByManager { get; private set; }
-
+        protected Client() { }
         private Client(Guid id, string login, string password, string firstName, string lastName, bool approved)
             : base(id, login, password, firstName, lastName)
         {

@@ -10,11 +10,11 @@ namespace FInanceSystem.Domain.Entities
     public abstract class User
     {
         public Guid Id { get; protected set; }
-        public string Login { get; protected set; }
-        public string Password { get; protected set; }
-        public string FirstName { get; protected set; }
-        public string LastName { get; protected set; }
-
+        public string? Login { get; protected set; }
+        public string? Password { get; protected set; }
+        public string? FirstName { get; protected set; }
+        public string? LastName { get; protected set; }
+        protected User() { }
         protected User(Guid id, string login, string password, string firstName, string lastName)
         {
             if (id == Guid.Empty)

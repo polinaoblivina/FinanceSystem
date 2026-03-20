@@ -9,10 +9,10 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface IEmploymentRepository
     {
-        Task<List<Employment>> GetByEnterpriseId(Guid enterpriseId);
-        Task<List<Employment>> GetByClientId(Guid clientId);
-        Task<Employment?> GetByClientAndEnterprise(Guid clientId, Guid enterpriseId);
-        Task Add(Employment employment);
-        Task<bool> Remove(Guid id);
+        Task<List<Employment>> GetByEnterpriseIdAsync(Guid enterpriseId);
+        Task<List<Employment>> GetByClientIdAsync(Guid clientId);
+        Task<Employment?> GetByClientAndEnterpriseAsync(Guid clientId, Guid enterpriseId);
+        Task AddAsync(Employment employment);
+        Task<bool> RemoveAsync(Guid id);
     }
 }

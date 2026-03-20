@@ -9,8 +9,8 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface IBankRepository
     {
-        Task<Bank?> GetById(Guid id);
-        Task<List<Bank>> GetAll();
-        Task Add(Bank bank);
+        Task<Bank?> GetByIdAsync(Guid id);
+        Task<List<Bank>> GetAllAsync();
+        Task AddAsync(Bank bank);
     }
 }

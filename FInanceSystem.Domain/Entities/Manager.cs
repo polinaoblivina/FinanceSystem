@@ -12,6 +12,7 @@ namespace FInanceSystem.Domain.Entities
        : base(id, login, password, firstName, lastName)
         { }
 
+        protected Manager() { }
         public static Manager CreateNew(string login, string password, string firstName, string lastName)
         {
             return new Manager(Guid.NewGuid(), login, password, firstName, lastName);

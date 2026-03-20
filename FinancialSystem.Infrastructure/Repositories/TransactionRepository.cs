@@ -12,33 +12,29 @@ namespace FinanceSystem.Infrastructure.Repositories
     public class TransactionRepository : ITransactionRepository
     {
         private readonly FinanceDbContext _dbContext;
-
         public TransactionRepository(FinanceDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
-        public async Task Add(Transaction transaction)
+        public async Task AddAsync(Transaction transaction)
         {
-            _dbContext.Transactions.Add(transaction);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Transactions.AddAsync(transaction);
         }
-
-        public async Task<List<Transaction>> GetAll()
+        public async Task<List<Transaction>> GetAllAsync()
+        {
+            return await _dbContext.Transactions.ToListAsync();
+        }
+        public async Task<Transaction?> GetByIdAsync(Guid id)
         {
             return await _dbContext.Transactions
+                                    .FindAsync(id);
+        }
+        public async Task<List<Transaction>> GetByAccountIdAsync(Guid accountId)
+        {
+            return await _dbContext.Transactions
+                                    .Where(t => t.FromId == accountId || t.ToId == accountId)
                                     .ToListAsync();
-        }
-
-        public async Task<Transaction?> GetById(Guid id)
-        {
-            return await _dbContext.Transactions
-                                    .FirstOrDefaultAsync(trans => trans.Id == id);
-        }
-
-        public Task<List<Transaction>> GetByTarget(Guid targetId)
-        {
-            // НАХУЯ
         }
     }
 }

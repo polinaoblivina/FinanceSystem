@@ -17,41 +17,33 @@ namespace FinanceSystem.Infrastructure.Repositories
         {
             _dbContext = dbContext;
         }
-
-        public async Task Add(Employment employment)
+        public async Task AddAsync(Employment employment)
         {
-            _dbContext.Employments.Add(employment);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Employments.AddAsync(employment);
         }
-
-        public async Task<Employment?> GetByClientAndEnterprise(Guid clientId, Guid enterpriseId)
+        public async Task<Employment?> GetByClientAndEnterpriseAsync(Guid clientId, Guid enterpriseId)
         {
-            return await _dbContext.Employments
-                            .FirstOrDefaultAsync(emp => emp.ClientId == clientId && emp.EnterpriseId == enterpriseId);
+            return await _dbContext.Employments.FirstOrDefaultAsync(emp => emp.ClientId == clientId && emp.EnterpriseId == enterpriseId);
         }
-
-        public async Task<List<Employment>> GetByClientId(Guid clientId)
+        public async Task<List<Employment>> GetByClientIdAsync(Guid clientId)
         {
             return await _dbContext.Employments
-                            .Where(emp => emp.ClientId == clientId)
-                            .ToListAsync();
+                                    .Where(emp => emp.ClientId == clientId)
+                                    .ToListAsync();
         }
-
-        public async Task<List<Employment>> GetByEnterpriseId(Guid enterpriseId)
+        public async Task<List<Employment>> GetByEnterpriseIdAsync(Guid enterpriseId)
         {
             return await _dbContext.Employments
                                     .Where(emp => emp.EnterpriseId == enterpriseId)
                                     .ToListAsync();
         }
-
-        public async Task<bool> Remove(Guid id)
+        public async Task<bool> RemoveAsync(Guid id)
         {
             Employment? employment = await _dbContext.Employments.FindAsync(id);
             if (employment == null)
                 return false;
 
             _dbContext.Employments.Remove(employment);
-            await _dbContext.SaveChangesAsync();
             return true;
         }
     }

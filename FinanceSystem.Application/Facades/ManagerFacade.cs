@@ -24,30 +24,30 @@ namespace FinanceSystem.Application.Facades
             _accountService = accountService;
         }
 
-        public void ApproveClient(Guid managerId, Guid clientId)
-           => _clientService.ApproveClient(managerId, clientId);
-        public void GetAllClients()
-            => _clientService.GetAllClients();
-        public void AddClientToEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
-            => _enterpriseService.AddClientToEnterprise(managerId, clientId, enterpriseId);
-        public void RemoveClientFromEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
-            => _enterpriseService.RemoveClientFromEnterprise(managerId, clientId, enterpriseId);
-        public List<(Enterprise Enterprise, List<Client> Employees)> GetAllEnterprisesWithEmployees()
-            => _enterpriseService.GetAllEnterprisesWithEmployees();
-        public void ApproveSalaryRequest(Guid managerId, Guid requestId)
-            => _salaryService.ApproveSalaryRequest(managerId, requestId);
-        public void RejectSalaryRequest(Guid managerId, Guid requestId) 
-            => _salaryService.RejectSalaryRequest(managerId, requestId); 
-        public void BlockAccount(Guid managerId, Guid accountId)
-            => _accountService.BlockAccount(managerId, accountId);
-        public void UnblockAccount(Guid managerId, Guid accountId)
-            => _accountService.UnblockAccount(managerId, accountId);
-        public void BlockDeposit(Guid managerId, Guid depositId)
-            => _accountService.BlockDeposit(managerId, depositId);
-        public void UnblockDeposit(Guid managerId, Guid depositId)
-            => _accountService.UnblockDeposit(managerId, depositId);
-        public List<Transaction> GetAccountTransactions(Guid accountId)
-            => _accountService.GetAccountTransactions(accountId);
+        public async Task ApproveClient(Guid managerId, Guid clientId)
+           => await _clientService.ApproveClient(managerId, clientId);
+        public async Task GetAllClients()
+            => await _clientService.GetAllClients();
+        public async Task AddClientToEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+            => await _enterpriseService.AddClientToEnterprise(managerId, clientId, enterpriseId);
+        public async Task RemoveClientFromEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+            => await _enterpriseService.RemoveClientFromEnterprise(managerId, clientId, enterpriseId);
+        public async Task<List<(Enterprise Enterprise, List<Client> Employees)>> GetAllEnterprisesWithEmployees()
+            => await _enterpriseService.GetAllEnterprisesWithEmployees();
+        public async Task ApproveSalaryRequest(Guid managerId, Guid requestId)
+            => await _salaryService.ApproveSalaryRequest(managerId, requestId);
+        public async Task RejectSalaryRequest(Guid managerId, Guid requestId) 
+            => await _salaryService.RejectSalaryRequest(managerId, requestId);
+        public async Task BlockAccount(Guid managerId, Guid accountId)
+            => await _accountService.BlockAccount(managerId, accountId);
+        public async Task UnblockAccount(Guid managerId, Guid accountId)
+            => await _accountService.UnblockAccount(managerId, accountId);
+        public async Task BlockDeposit(Guid managerId, Guid depositId)
+            => await _accountService.BlockDeposit(managerId, depositId);
+        public async Task UnblockDeposit(Guid managerId, Guid depositId)
+            => await _accountService.UnblockDeposit(managerId, depositId);
+        public async Task<List<Transaction>> GetAccountTransactions(Guid accountId)
+            => await _accountService.GetAccountTransactions(accountId);
     }
 }
 

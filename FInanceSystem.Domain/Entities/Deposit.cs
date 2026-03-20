@@ -20,6 +20,7 @@ namespace FInanceSystem.Domain.Entities
         public DepositStatus Status { get; private set; }
         public DateTime LastInterestDate { get; private set; }
 
+        private Deposit() { }
         private Deposit(Guid id, Guid clientId, Guid bankId, decimal balance, double interestRate, DepositType depositType, DepositStatus status, DateTime lastInterestDate)
         {
             if (id == Guid.Empty)

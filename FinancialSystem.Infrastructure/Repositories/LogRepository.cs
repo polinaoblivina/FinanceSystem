@@ -17,20 +17,17 @@ namespace FinanceSystem.Infrastructure.Repositories
         {
             _dbContext = dbContext;
         }
-        public async Task Add(SystemLog log)
+        public async Task AddAsync(SystemLog log)
         {
-            _dbContext.Logs.Add(log);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Logs.AddAsync(log);
         }
-
-        public async Task<List<SystemLog>> GetAll()
+        public async Task<List<SystemLog>> GetAllAsync()
         {
             return await _dbContext.Logs.ToListAsync();
         }
-
-        public async Task<SystemLog?> GetById(Guid id)
+        public async Task<SystemLog?> GetByIdAsync(Guid id)
         {
-            return await _dbContext.Logs.FirstOrDefaultAsync(log => log.Id == id);
+            return await _dbContext.Logs.FindAsync(id);
         }
     }
 }

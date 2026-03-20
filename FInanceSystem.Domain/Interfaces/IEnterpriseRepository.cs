@@ -9,8 +9,8 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface IEnterpriseRepository
     {
-        Task<Enterprise?> GetById(Guid id);
-        Task<List<Enterprise>> GetAll();
-        Task Add(Enterprise enterprise);
+        Task<Enterprise?> GetByIdAsync(Guid id);
+        Task<List<Enterprise>> GetAllAsync();
+        Task AddAsync(Enterprise enterprise);
     }
 }

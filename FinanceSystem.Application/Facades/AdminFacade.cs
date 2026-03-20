@@ -19,7 +19,7 @@ namespace FinanceSystem.Application.Facades
             _logViewerService = logViewerService;
             _actionRevertService = actionRevertService;
         }
-        public List<SystemLog> GetAllLogs() => _logViewerService.GetAllLogs();
-        public void RevertByLogId(Guid adminId, Guid logId) => _actionRevertService.RevertByLogId(adminId, logId);
+        public async Task<List<SystemLog>> GetAllLogs() => await _logViewerService.GetAllLogs();
+        public async Task RevertByLogId(Guid adminId, Guid logId) => await  _actionRevertService.RevertByLogId(adminId, logId);
     }
 }

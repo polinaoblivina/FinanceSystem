@@ -9,10 +9,10 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface IUserRepository
     {
-        Task<User?> GetById(Guid id);
-        Task<User?> GetByLogin(string login);
-        Task<List<User>> GetAll();
-        Task Add(User user);
-        Task Update(User user);
+        Task<User?> GetByIdAsync(Guid id);
+        Task<User?> GetByLoginAsync(string login);
+        Task<List<User>> GetAllAsync();
+        Task AddAsync(User user);
+        Task UpdateAsync(User user);
     }
 }

@@ -17,47 +17,39 @@ namespace FinanceSystem.Infrastructure.Repositories
         {
             _dbContext = dbContext;
         }
-
-        public async Task Add(SalaryProjectRequest request)
+        public async Task AddAsync(SalaryProjectRequest request)
         {
-            _dbContext.SalaryProjectRequests.Add(request);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.SalaryProjectRequests.AddAsync(request);
         }
-
-        public async Task<SalaryProjectRequest?> GetApproved(Guid clientId, Guid enterpriseId)
-        {
-            // ВОПРОСЫ
-        }
-
-        public async Task<SalaryProjectRequest?> GetByClientAndEnterprise(Guid clientId, Guid enterpriseId)
+        public async Task<SalaryProjectRequest?> GetByClientAndEnterpriseAsync(Guid clientId, Guid enterpriseId)
         {
             return await _dbContext.SalaryProjectRequests
-                                    .FirstOrDefaultAsync(req => req.EnterpriseId == enterpriseId && req.ClientId == clientId);
+                                        .FirstOrDefaultAsync(req => req.EnterpriseId == enterpriseId && req.ClientId == clientId);
         }
 
-        public async Task<List<SalaryProjectRequest>> GetByClientId(Guid clientId)
+        public async Task<List<SalaryProjectRequest>> GetByClientIdAsync(Guid clientId)
         {
             return await _dbContext.SalaryProjectRequests
-                                        .Where(req => req.ClientId == clientId).ToListAsync();
-        }
-
-        public async Task<SalaryProjectRequest?> GetById(Guid id)
-        {
-            return await _dbContext.SalaryProjectRequests
-                                        .FirstOrDefaultAsync(req => req.Id == id);
-        }
-
-        public async Task<List<SalaryProjectRequest>> GetPending()
-        {
-            return await _dbContext.SalaryProjectRequests
-                                        .Where(req => req.Status == RequestStatus.Pending) // НАХУЯ
+                                        .Where(req => req.ClientId == clientId)
                                         .ToListAsync();
         }
 
-        public async Task Update(SalaryProjectRequest request)
+        public async Task<SalaryProjectRequest?> GetByIdAsync(Guid id)
+        {
+            return await _dbContext.SalaryProjectRequests
+                                        .FindAsync(id);
+        }
+
+        public async Task<List<SalaryProjectRequest>> GetPendingAsync()
+        {
+            return await _dbContext.SalaryProjectRequests
+                                    .Where(req => req.Status == RequestStatus.Pending)
+                                    .ToListAsync();
+        }
+        public Task UpdateAsync(SalaryProjectRequest request)
         {
             _dbContext.SalaryProjectRequests.Update(request);
-            await _dbContext.SaveChangesAsync();
+            return Task.CompletedTask;
         }
     }
 }

@@ -16,6 +16,7 @@ namespace FInanceSystem.Domain.Entities
         public LogTargetType? TargetType { get; private set; }
         public DateTime Timestamp { get; private set; }
 
+        private SystemLog() { }
         private SystemLog(Guid id, Guid userId, ActionType action, Guid? targetId, LogTargetType? logTargetType, DateTime timestamp)
         {
             if (id == Guid.Empty)

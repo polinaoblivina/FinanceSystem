@@ -11,6 +11,8 @@ namespace FInanceSystem.Domain.Entities
         public Guid Id { get; private set; }
         public Guid ClientId { get; private set; }
         public Guid EnterpriseId { get; private set; }
+
+        private Employment() { }
         private Employment(Guid id, Guid clientId, Guid enterpriseId)
         {
             if (id == Guid.Empty)

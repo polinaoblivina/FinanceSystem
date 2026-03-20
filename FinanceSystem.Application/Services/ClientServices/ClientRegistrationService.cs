@@ -1,5 +1,6 @@
 ﻿using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,24 +12,22 @@ namespace FinanceSystem.Application.Services.ClientServices
 {
     public class ClientRegistrationService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly ILogRepository _logRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ClientRegistrationService(IUserRepository userRepository, ILogRepository logRepository) 
+        public ClientRegistrationService(IUnitOfWork unitOfWork) 
         {
-            _userRepository = userRepository;
-            _logRepository = logRepository;
+            _unitOfWork = unitOfWork;
         }
-        public Client Register(string login, string password, string firstName, string lastName)
+        public async Task<Client> Register(string login, string password, string firstName, string lastName)
         {
-            if (_userRepository.GetByLogin(login) != null)
+            if (await _unitOfWork.Users.GetByLoginAsync(login) != null)
                 throw new InvalidOperationException("Login already exists");
 
             var client = Client.CreateNew(login, password, firstName, lastName);
-            _userRepository.Add(client);
+            await _unitOfWork.Users.AddAsync(client);
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(client.Id, ActionType.Create));
 
-            _logRepository.Add(SystemLog.Create(client.Id, ActionType.Create));
-
+            await _unitOfWork.SaveChangesAsync();
             return client;
         }
     }

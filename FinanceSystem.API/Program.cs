@@ -1,14 +1,38 @@
+using FinanceSystem.Infrastructure;
+using FInanceSystem.Domain.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddDbContext<FinanceDbContext>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+    try
+    {
+        Console.WriteLine("Проверка подключения...");
+        var canConnect = dbContext.Database.CanConnect();
+        Console.WriteLine($"Подключение успешно: {canConnect}");
+
+        if (canConnect)
+        {
+            Console.WriteLine("Создание базы данных");
+            dbContext.Database.EnsureCreated();
+            Console.WriteLine("База данных создана");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($" Ошибка: {ex.Message}");
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

@@ -18,21 +18,20 @@ namespace FinanceSystem.Infrastructure.Repositories
         {
             _dbContext = dbContext;
         }
-        public async Task Add(Bank bank)
+
+        public async Task AddAsync(Bank bank)
         {
-            _dbContext.Banks.Add(bank);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Banks.AddAsync(bank);
         }
 
-        public async Task<List<Bank>> GetAll()
+        public async Task<List<Bank>> GetAllAsync()
         {
             return await _dbContext.Banks.ToListAsync();
         }
 
-        public Task<Bank?> GetById(Guid id)
+        public async Task<Bank?> GetByIdAsync(Guid id)
         {
-            return _dbContext.Banks
-                            .FirstOrDefaultAsync(bank =>  bank.Id == id);
+            return await _dbContext.Banks.FindAsync(id);
         }
     }
 }

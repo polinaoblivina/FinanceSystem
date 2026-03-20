@@ -1,5 +1,6 @@
 ﻿using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,80 +12,75 @@ namespace FinanceSystem.Application.Services.ManagerServices
 {
     public class EnterpriseManagementService
     {
-        private readonly IEnterpriseRepository _enterpriseRepository;
-        private readonly IEmploymentRepository _employmentRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly ILogRepository _logRepository;
-
-        public EnterpriseManagementService(IEnterpriseRepository enterpriseRepository, IEmploymentRepository employmentRepository, IUserRepository userRepository, ILogRepository logRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public EnterpriseManagementService(IUnitOfWork unitOfWork)
         {
-            _enterpriseRepository = enterpriseRepository;
-            _employmentRepository = employmentRepository;
-            _userRepository = userRepository;
-            _logRepository = logRepository;
+            _unitOfWork = unitOfWork;
         }
-        public void AddClientToEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+        public async Task AddClientToEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
         {
-            var user = _userRepository.GetById(clientId);
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
             if (user is not Client)
                 throw new InvalidOperationException("User is not a client");
 
-            var enterprise = _enterpriseRepository.GetById(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var existingEmployment = _employmentRepository.GetByClientAndEnterprise(clientId, enterpriseId);
+            var existingEmployment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
             if (existingEmployment != null)
                 throw new InvalidOperationException("Client is already added to this enterprise");
 
             var employment = Employment.CreateNew(clientId, enterpriseId);
-            _employmentRepository.Add(employment);
+            await _unitOfWork.Employments.AddAsync(employment);
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Create, employment.Id, LogTargetType.Employment));
 
-            _logRepository.Add(SystemLog.Create(managerId, ActionType.Create,employment.Id, LogTargetType.Employment));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void RemoveClientFromEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+        public async Task RemoveClientFromEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
         {
-            var user = _userRepository.GetById(clientId);
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
             if (user is not Client)
                 throw new InvalidOperationException("User is not a client");
 
-            var enterprise = _enterpriseRepository.GetById(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var employment = _employmentRepository.GetByClientAndEnterprise(clientId, enterpriseId);
+            var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
             if (employment == null)
                 throw new InvalidOperationException("Client is not employed at this enterprise");
 
-            _employmentRepository.Remove(employment.Id);
-            _logRepository.Add(SystemLog.Create(managerId, ActionType.Delete, employment.Id, LogTargetType.Employment));
+            await _unitOfWork.Employments.RemoveAsync(employment.Id);
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Delete, employment.Id, LogTargetType.Employment));
+
+            await _unitOfWork.SaveChangesAsync();
         }
-        public List<(Enterprise Enterprise, List<Client> Employees)> GetAllEnterprisesWithEmployees()
+        public async Task<List<(Enterprise Enterprise, List<Client> Employees)>> GetAllEnterprisesWithEmployees()
         {
-            var enterprises = _enterpriseRepository.GetAll();
+            var enterprises = await _unitOfWork.Enterprises.GetAllAsync();
             if (enterprises == null)
                 enterprises = new List<Enterprise>();
             var result = new List<(Enterprise, List<Client>)>();
 
             foreach (var enterprise in enterprises)
             {
-                var employments = _employmentRepository.GetByEnterpriseId(enterprise.Id);
+                var employments = await _unitOfWork.Employments.GetByEnterpriseIdAsync(enterprise.Id);
                 var employees = new List<Client>();
 
                 foreach (var employment in employments)
                 {
-                    var user = _userRepository.GetById(employment.ClientId);
+                    var user = await _unitOfWork.Users.GetByIdAsync(employment.ClientId);
                     if (user is Client client)
                         employees.Add(client);
                 }
                 result.Add((enterprise, employees));
             }
-
             return result;
         }
     }

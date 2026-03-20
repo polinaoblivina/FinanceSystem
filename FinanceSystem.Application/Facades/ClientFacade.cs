@@ -36,42 +36,42 @@ namespace FinanceSystem.Application.Facades
             _salaryService = salaryService;
         }
 
-        public Client Register(string login, string password, string firstName, string lastName)
-            => _registrationService.Register(login, password, firstName, lastName);
+        public async Task<Client> Register(string login, string password, string firstName, string lastName)
+            => await _registrationService.Register(login, password, firstName, lastName);
 
-        public List<Bank> GetBanks()
-            => _infoService.GetBanks();
-        public List<Enterprise> GetEnterprises()
-            => _infoService.GetEnterprises();
+        public async Task<List<Bank>> GetBanks()
+            => await _infoService.GetBanks();
+        public async Task<List<Enterprise>> GetEnterprises()
+            => await _infoService.GetEnterprises();
 
-        public Account OpenAccount(Guid clientId, Guid bankId)
-            => _accountService.OpenAccount(clientId, bankId);
-        public void CloseAccount(Guid clientId, Guid accountId)
-            => _accountService.CloseAccount(clientId, accountId);
-        public List<Transaction> GetAccountTransactions(Guid clientId, Guid accountId)
-            => _accountService.GetTransactions(clientId, accountId);
+        public async Task<Account> OpenAccount(Guid clientId, Guid bankId)
+            => await _accountService.OpenAccount(clientId, bankId);
+        public async Task CloseAccount(Guid clientId, Guid accountId)
+            => await _accountService.CloseAccount(clientId, accountId);
+        public async Task<List<Transaction>> GetAccountTransactions(Guid clientId, Guid accountId)
+            => await _accountService.GetTransactions(clientId, accountId);
 
-        public Deposit CreateDeposit(Guid clientId, Guid bankId, decimal amount, double rate, DepositType type)
-            => _depositService.CreateDeposit(clientId, bankId, amount, rate, type);
-        public void CloseDeposit(Guid clientId, Guid depositId, Guid accountId)
-            => _depositService.CloseDeposit(clientId, depositId, accountId);
-        public void AccrueInterest(Guid clientId, Guid depositId)
-            => _depositService.AccrueInterest(clientId, depositId);
-
-
-        public void TransferAccountToAccount(Guid clientId, Guid fromAccountId, Guid toAccountId, decimal amount)
-            => _transferService.TransferAccountToAccount(clientId, fromAccountId, toAccountId, amount);
-        public void TransferAccountToDeposit(Guid clientId, Guid accountId, Guid depositId, decimal amount)
-            => _transferService.TransferAccountToDeposit(clientId, accountId, depositId, amount);
-        public void TransferDepositToAccount(Guid clientId, Guid depositId, Guid accountId, decimal amount)
-            => _transferService.TransferDepositToAccount(clientId, depositId, accountId, amount);
-        public void TransferDepositToDeposit(Guid clientId, Guid fromDepositId, Guid toDepositId, decimal amount)
-            => _transferService.TransferDepositToDeposit(clientId, fromDepositId, toDepositId, amount);
+        public async Task<Deposit> CreateDeposit(Guid clientId, Guid bankId, decimal amount, double rate, DepositType type)
+            => await _depositService.CreateDeposit(clientId, bankId, amount, rate, type);
+        public async Task CloseDeposit(Guid clientId, Guid depositId, Guid accountId)
+            =>  await _depositService.CloseDeposit(clientId, depositId, accountId);
+        public async Task AccrueInterest(Guid clientId, Guid depositId)
+            => await  _depositService.AccrueInterest(clientId, depositId);
 
 
-        public void RequestSalaryProject(Guid clientId, Guid enterpriseId)
-            => _salaryService.RequestSalaryProject(clientId, enterpriseId);
-        public void ReceiveSalary(Guid clientId, Guid enterpriseId, Guid accountId, decimal amount)
-            => _salaryService.ReceiveSalary(clientId, enterpriseId, accountId, amount);
+        public async Task TransferAccountToAccount(Guid clientId, Guid fromAccountId, Guid toAccountId, decimal amount)
+            => await _transferService.TransferAccountToAccount(clientId, fromAccountId, toAccountId, amount);
+        public async Task TransferAccountToDeposit(Guid clientId, Guid accountId, Guid depositId, decimal amount)
+            => await _transferService.TransferAccountToDeposit(clientId, accountId, depositId, amount);
+        public async Task TransferDepositToAccount(Guid clientId, Guid depositId, Guid accountId, decimal amount)
+            => await _transferService.TransferDepositToAccount(clientId, depositId, accountId, amount);
+        public async Task TransferDepositToDeposit(Guid clientId, Guid fromDepositId, Guid toDepositId, decimal amount)
+            => await _transferService.TransferDepositToDeposit(clientId, fromDepositId, toDepositId, amount);
+
+
+        public async Task RequestSalaryProject(Guid clientId, Guid enterpriseId)
+            => await _salaryService.RequestSalaryProject(clientId, enterpriseId);
+        public async Task ReceiveSalary(Guid clientId, Guid enterpriseId, Guid accountId, decimal amount)
+            => await _salaryService.ReceiveSalary(clientId, enterpriseId, accountId, amount);
     }
 }

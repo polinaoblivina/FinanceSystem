@@ -9,12 +9,11 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface ISalaryProjectRequestRepository
     {
-        Task<SalaryProjectRequest?> GetById(Guid id);
-        Task<List<SalaryProjectRequest>> GetPending();
-        Task<List<SalaryProjectRequest>> GetByClientId(Guid clientId);
-        Task<SalaryProjectRequest?> GetByClientAndEnterprise(Guid clientId, Guid enterpriseId);
-        Task<SalaryProjectRequest?> GetApproved(Guid clientId, Guid enterpriseId);
-        Task Add(SalaryProjectRequest request);
-        Task Update(SalaryProjectRequest request);
+        Task<SalaryProjectRequest?> GetByIdAsync(Guid id);
+        Task<List<SalaryProjectRequest>> GetPendingAsync();
+        Task<List<SalaryProjectRequest>> GetByClientIdAsync(Guid clientId);
+        Task<SalaryProjectRequest?> GetByClientAndEnterpriseAsync(Guid clientId, Guid enterpriseId);
+        Task AddAsync(SalaryProjectRequest request);
+        Task UpdateAsync(SalaryProjectRequest request);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FInanceSystem.Domain.Entities;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -10,35 +11,32 @@ namespace FinanceSystem.Application.Services.Common
 {
     public class SeedService
     {
-        private readonly IBankRepository _bankRepository;
-        private readonly IEnterpriseRepository _enterpriseRepository;
-        private readonly IUserRepository _userRepository;
-        public SeedService(IBankRepository bankRepository,IEnterpriseRepository enterpriseRepository, IUserRepository userRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public SeedService(IUnitOfWork unitOfWork)
         {
-            _bankRepository = bankRepository;
-            _enterpriseRepository = enterpriseRepository;
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public void SeedAllData()
+        public async Task SeedAllData()
         {
-            SeedBanks();
-            SeedEnterprises();
+            await SeedBanks();
+            await SeedEnterprises();
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void SeedBanks()
+        public async Task SeedBanks()
         {
             var bank1 = Bank.CreateNew("Bank1");
             var bank2 = Bank.CreateNew("Bank2");
-            _bankRepository.Add(bank1);
-            _bankRepository.Add(bank2);
+            await _unitOfWork.Banks.AddAsync(bank1);
+            await _unitOfWork.Banks.AddAsync(bank2);
         }
-        public void SeedEnterprises()
+        public async Task SeedEnterprises()
         {
             var enterprise1 = Enterprise.CreateNew("Enterprise1");
             var enterprise2 = Enterprise.CreateNew("Enterprise2");
-            _enterpriseRepository.Add(enterprise1);
-            _enterpriseRepository.Add(enterprise2);
+            await _unitOfWork.Enterprises.AddAsync(enterprise1);
+            await _unitOfWork.Enterprises.AddAsync(enterprise2);
         }
     }
 }

@@ -1,20 +1,20 @@
 ﻿using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 
 namespace FinanceSystem.Application.Services.Common
 {
     public class AuthService
     {
-        private readonly IUserRepository _userRepository;
-        private readonly ILogRepository _logRepository;
-        public AuthService(IUserRepository userRepository, ILogRepository logRepository)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public AuthService(IUnitOfWork unitOfWork)
         {
-            _userRepository = userRepository;
-            _logRepository = logRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public User Login(string login, string password)
+        public async Task<User> Login(string login, string password)
         {
             if (string.IsNullOrWhiteSpace(login))
                 throw new ArgumentException("Invalid login", nameof(login));
@@ -22,7 +22,7 @@ namespace FinanceSystem.Application.Services.Common
             if (string.IsNullOrWhiteSpace(password))
                 throw new ArgumentException("Invalid password", nameof(password));
 
-            var user = _userRepository.GetByLogin(login);
+            var user = await _unitOfWork.Users.GetByLoginAsync(login);
 
             if (user == null)
                 throw new UnauthorizedAccessException("User not found");
@@ -30,13 +30,16 @@ namespace FinanceSystem.Application.Services.Common
             if (user.Password != password)
                 throw new UnauthorizedAccessException("Invalid password");
 
-            _logRepository.Add(SystemLog.Create(user.Id, ActionType.Login));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(user.Id, ActionType.Login));
+            await _unitOfWork.SaveChangesAsync();
+
             return user;
         }
 
-        public void Logout(Guid userId)
+        public async Task Logout(Guid userId)
         {
-            _logRepository.Add(SystemLog.Create(userId, ActionType.Logout));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(userId, ActionType.Logout));
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

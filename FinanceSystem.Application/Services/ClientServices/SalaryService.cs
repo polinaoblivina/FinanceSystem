@@ -1,5 +1,6 @@
 ﻿using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -11,63 +12,59 @@ namespace FinanceSystem.Application.Services.ClientServices
 {
     public class SalaryService
     {
-        private readonly ISalaryProjectRequestRepository _requestRepository;
-        private readonly ITransactionRepository _transactionRepository;
-        private readonly IAccountRepository _accountRepository;
-        private readonly IEnterpriseRepository _enterpriseRepository;
-        private readonly ILogRepository _logRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public SalaryService(ISalaryProjectRequestRepository requestRepository, ITransactionRepository transactionRepository, IAccountRepository accountRepository, IEnterpriseRepository enterpriseRepository, ILogRepository logRepository)
+        public SalaryService(IUnitOfWork unitOfWork)
         {
-            _requestRepository = requestRepository;
-            _transactionRepository = transactionRepository;
-            _accountRepository = accountRepository;
-            _enterpriseRepository = enterpriseRepository;
-            _logRepository = logRepository;
+            _unitOfWork = unitOfWork;
         }
-        public void RequestSalaryProject(Guid clientId, Guid enterpriseId)
+        public async Task RequestSalaryProject(Guid clientId, Guid enterpriseId)
         {
-            var enterprise = _enterpriseRepository.GetById(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var existing = _requestRepository.GetByClientAndEnterprise(clientId, enterpriseId);
+            var existing = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
             if (existing != null)
                 throw new InvalidOperationException("Request already exists");
 
             var request = SalaryProjectRequest.CreateNew(clientId, enterpriseId);
 
-            _requestRepository.Add(request);
+            await _unitOfWork.SalaryRequests.AddAsync(request);
 
-            _logRepository.Add(SystemLog.Create(clientId, ActionType.Create, request.Id, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Create, request.Id, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        public void ReceiveSalary(Guid clientId, Guid enterpriseId, Guid accountId, decimal amount)
+        public async Task ReceiveSalary(Guid clientId, Guid enterpriseId, Guid accountId, decimal amount)
         {
-            var account = _accountRepository.GetById(accountId);
+            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
 
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
-            var enterprise = _enterpriseRepository.GetById(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var request = _requestRepository.GetApproved(clientId, enterpriseId);
+            var request = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
 
             if (request == null)
-                throw new InvalidOperationException("Salary project not approved");
+                throw new InvalidOperationException("No salary project request found");
+
+            if (request.Status != RequestStatus.Accepted)
+                throw new InvalidOperationException("Salary project not accepted");
+
 
             account.IncreaseBalance(amount);
-            _accountRepository.Update(account);
 
             var transaction = Transaction.CreateNew(enterpriseId, accountId, amount, TransactionType.SalaryPayment);
+            await _unitOfWork.Transactions.AddAsync(transaction);
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.ReceiveSalary, accountId, LogTargetType.Account));
 
-            _transactionRepository.Add(transaction);
-
-            _logRepository.Add(SystemLog.Create(clientId, ActionType.ReceiveSalary, accountId, LogTargetType.Account));
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

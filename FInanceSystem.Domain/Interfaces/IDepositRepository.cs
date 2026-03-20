@@ -9,9 +9,9 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface IDepositRepository
     {
-        Task<Deposit> GetById(Guid id);
-        Task<List<Deposit>> GetByClientId(Guid clientId);
-        Task Add(Deposit deposit);
-        Task Update(Deposit deposit);
+        Task<Deposit?> GetByIdAsync(Guid id);              
+        Task<List<Deposit>> GetByClientIdAsync(Guid clientId);
+        Task AddAsync(Deposit deposit);
+        Task UpdateAsync(Deposit deposit);
     }
 }

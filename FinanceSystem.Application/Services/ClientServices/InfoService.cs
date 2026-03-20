@@ -1,4 +1,5 @@
 ﻿using FInanceSystem.Domain.Entities;
+using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
@@ -10,19 +11,17 @@ namespace FinanceSystem.Application.Services.ClientServices
 {
     public class InfoService
     {
-        private readonly IBankRepository _bankRepository;
-        private readonly IEnterpriseRepository _enterpriseRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public InfoService(IBankRepository bankRepository, IEnterpriseRepository enterpriseRepository)
+        public InfoService(IUnitOfWork unitOfWork)
         {
-            _bankRepository = bankRepository;
-            _enterpriseRepository = enterpriseRepository;
+            _unitOfWork = unitOfWork;
         }
 
-        public List<Bank> GetBanks()
-            => _bankRepository.GetAll();
+        public async Task<List<Bank>> GetBanks()
+            => await _unitOfWork.Banks.GetAllAsync();
 
-        public List<Enterprise> GetEnterprises()
-            => _enterpriseRepository.GetAll();
+        public async Task<List<Enterprise>> GetEnterprises()
+            => await _unitOfWork.Enterprises.GetAllAsync();
     }
 }

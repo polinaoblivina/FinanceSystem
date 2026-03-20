@@ -9,8 +9,8 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface ILogRepository
     {
-        Task<SystemLog?> GetById(Guid id);
-        Task<List<SystemLog>> GetAll();
-        Task Add(SystemLog log);
+        Task<SystemLog?> GetByIdAsync(Guid id);
+        Task<List<SystemLog>> GetAllAsync();
+        Task AddAsync(SystemLog log);
     }
 }

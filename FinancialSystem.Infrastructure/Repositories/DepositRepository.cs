@@ -17,29 +17,24 @@ namespace FinanceSystem.Infrastructure.Repositories
         {
             _dbContext = dbContext;
         }
-        public async Task Add(Deposit deposit)
+        public async Task AddAsync(Deposit deposit)
         {
-            _dbContext.Deposits.Add(deposit);
-            await _dbContext.SaveChangesAsync();
+            await _dbContext.Deposits.AddAsync(deposit);
         }
-
-        public async Task<List<Deposit>> GetByClientId(Guid clientId)
+        public async Task<List<Deposit>> GetByClientIdAsync(Guid clientId)
         {
             return await _dbContext.Deposits
-                           .Where(dep => dep.ClientId == clientId)
-                           .ToListAsync();
+                                    .Where(dep => dep.ClientId == clientId)
+                                    .ToListAsync();
         }
-
-        public async Task<Deposit?> GetById(Guid id)
+        public async Task<Deposit?> GetByIdAsync(Guid id)
         {
-            return await _dbContext.Deposits
-                           .FirstOrDefaultAsync(dep => dep.Id == id);
+            return await _dbContext.Deposits.FindAsync(id);
         }
-
-        public async Task Update(Deposit deposit)
+        public Task UpdateAsync(Deposit deposit)
         {
             _dbContext.Deposits.Update(deposit);
-            await _dbContext.SaveChangesAsync();
+            return Task.CompletedTask;
         }
     }
 }

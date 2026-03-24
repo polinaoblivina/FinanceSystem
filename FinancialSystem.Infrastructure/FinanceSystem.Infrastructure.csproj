@@ -17,10 +17,4 @@
     <ProjectReference Include="..\FInanceSystem.Domain\FInanceSystem.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.jsn">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

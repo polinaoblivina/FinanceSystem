@@ -26,6 +26,9 @@ namespace FinanceSystem.Application.Services.AdminServices
 
             if (log.Action == ActionType.Login || log.Action == ActionType.Logout)
                 throw new InvalidOperationException("Cannot revert login/logout actions");
+
+
+
             await _unitOfWork.SaveChangesAsync();
         }
     }

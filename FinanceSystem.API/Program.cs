@@ -1,13 +1,16 @@
+using FinanceSystem.Application.Facades;
 using FinanceSystem.Infrastructure;
 using FInanceSystem.Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddDbContext<FinanceDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -16,16 +19,12 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
     try
     {
-        Console.WriteLine("Проверка подключения...");
-        var canConnect = dbContext.Database.CanConnect();
-        Console.WriteLine($"Подключение успешно: {canConnect}");
+        var validConnection = dbContext.Database.CanConnect();
 
-        if (canConnect)
-        {
-            Console.WriteLine("Создание базы данных");
+        if (validConnection)
             dbContext.Database.EnsureCreated();
-            Console.WriteLine("База данных создана");
-        }
+        
+
     }
     catch (Exception ex)
     {
@@ -35,6 +34,8 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();           
+    app.UseSwaggerUI();
     app.MapOpenApi();
 }
 

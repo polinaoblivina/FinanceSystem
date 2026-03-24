@@ -40,5 +40,10 @@ namespace FinanceSystem.Infrastructure.Repositories
             _dbContext.Users.Update(user);
             return Task.CompletedTask;
         }
+
+        public async Task<List<Client>> GetAllClients()
+        {
+            return await _dbContext.Users.OfType<Client>().ToListAsync();
+        }
     }
 }

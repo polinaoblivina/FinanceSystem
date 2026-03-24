@@ -1,30 +1,58 @@
 using FinanceSystem.Application.Facades;
+using FinanceSystem.Application.Services.AdminServices;
+using FinanceSystem.Application.Services.ClientServices;
+using FinanceSystem.Application.Services.Common;
+using FinanceSystem.Application.Services.ManagerServices;
 using FinanceSystem.Infrastructure;
 using FInanceSystem.Domain.Interfaces;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<FinanceDbContext>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+//Admin
+builder.Services.AddScoped<LogViewerService>();
+builder.Services.AddScoped<ActionRevertService>();
+
+//Manager
+builder.Services.AddScoped<ClientManagementService>();
+builder.Services.AddScoped<EnterpriseManagementService>();
+builder.Services.AddScoped<SalaryRequestService>();
+builder.Services.AddScoped<AccountControlService>();
+
+//Client
+builder.Services.AddScoped<ClientRegistrationService>();
+builder.Services.AddScoped<AccountService>();
+builder.Services.AddScoped<DepositService>();
+builder.Services.AddScoped<TransferService>();
+builder.Services.AddScoped<InfoService>();
+builder.Services.AddScoped<SalaryService>();
+
+//Common
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<SeedService>();
+
 builder.Services.AddControllers();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+    var seedService = scope.ServiceProvider.GetRequiredService<SeedService>();
+
     try
     {
-        var validConnection = dbContext.Database.CanConnect();
-
-        if (validConnection)
+        if (dbContext.Database.CanConnect())
+        {
             dbContext.Database.EnsureCreated();
-        
-
+            await seedService.SeedAllData();
+        }
     }
     catch (Exception ex)
     {
@@ -34,15 +62,12 @@ using (var scope = app.Services.CreateScope())
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();           
+    app.UseSwagger();
     app.UseSwaggerUI();
-    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

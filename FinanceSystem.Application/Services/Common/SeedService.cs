@@ -21,22 +21,44 @@ namespace FinanceSystem.Application.Services.Common
         {
             await SeedBanks();
             await SeedEnterprises();
+            await SeedUsers();
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task SeedBanks()
         {
-            var bank1 = Bank.CreateNew("Bank1");
-            var bank2 = Bank.CreateNew("Bank2");
-            await _unitOfWork.Banks.AddAsync(bank1);
-            await _unitOfWork.Banks.AddAsync(bank2);
+            var existingBanks = await _unitOfWork.Banks.GetAllAsync();
+            if (existingBanks.Count == 0)
+            {
+                var bank1 = Bank.CreateNew("Bank1");
+                var bank2 = Bank.CreateNew("Bank2");
+                await _unitOfWork.Banks.AddAsync(bank1);
+                await _unitOfWork.Banks.AddAsync(bank2);
+            }
         }
         public async Task SeedEnterprises()
         {
-            var enterprise1 = Enterprise.CreateNew("Enterprise1");
-            var enterprise2 = Enterprise.CreateNew("Enterprise2");
-            await _unitOfWork.Enterprises.AddAsync(enterprise1);
-            await _unitOfWork.Enterprises.AddAsync(enterprise2);
+            var existingEnterprises = await _unitOfWork.Enterprises.GetAllAsync();
+            if (existingEnterprises.Count == 0)
+            {
+                var enterprise1 = Enterprise.CreateNew("Enterprise1");
+                var enterprise2 = Enterprise.CreateNew("Enterprise2");
+                await _unitOfWork.Enterprises.AddAsync(enterprise1);
+                await _unitOfWork.Enterprises.AddAsync(enterprise2);
+            }
+        }
+
+        public async Task SeedUsers()
+        {
+            var existingUsers = await _unitOfWork.Users.GetAllAsync();
+            if (existingUsers.Count == 0)
+            {
+                var admin = Admin.CreateNew("admin", "adminparol", "Admin", "Adminovich");
+                await _unitOfWork.Users.AddAsync(admin);
+
+                var manager = Manager.CreateNew("manager", "managerparol", "Manager", "Managerovich");
+                await _unitOfWork.Users.AddAsync(manager);
+            }
         }
     }
 }

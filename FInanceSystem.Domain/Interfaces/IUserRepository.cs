@@ -14,5 +14,6 @@ namespace FInanceSystem.Domain.Repositories
         Task<List<User>> GetAllAsync();
         Task AddAsync(User user);
         Task UpdateAsync(User user);
+        Task<List<Client>> GetAllClients();
     }
 }

@@ -18,9 +18,9 @@ namespace FinanceSystem.Application.Services.ManagerServices
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<User>> GetAllClients()
+        public async Task<List<Client>> GetAllClients()
         {
-            return await _unitOfWork.Users.GetAllAsync();
+            return await _unitOfWork.Users.GetAllClients();
         }
 
         public async Task ApproveClient(Guid managerId, Guid clientId)

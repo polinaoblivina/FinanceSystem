@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using FinanceSystem.API.Services;
+﻿using FinanceSystem.API.Services;
 using FinanceSystem.Application.Services.AdminServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceSystem.API.Controllers
 {
@@ -12,11 +13,13 @@ namespace FinanceSystem.API.Controllers
     {
         private readonly ActionRevertService _actionRevertService;
         private readonly LogViewerService _logViewerService;
+        private readonly CurrentUserService _currentUserService;
 
-        public AdminController(ActionRevertService actionRevertService, LogViewerService logViewerService)
+        public AdminController(ActionRevertService actionRevertService, LogViewerService logViewerService, CurrentUserService currentUserService)
         {
             _actionRevertService = actionRevertService;
             _logViewerService = logViewerService;
+            _currentUserService = currentUserService;
         }
 
         [HttpGet("logs")]
@@ -34,10 +37,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("revert-action")]
-        public async Task<IActionResult> RevertAction(Guid adminId, string logNumber)
+        public async Task<IActionResult> RevertAction(string logNumber)
         {
             try
             {
+                var adminId = _currentUserService.GetCurrentUserId();
                 await _actionRevertService.RevertByLogId(adminId, logNumber);
                 return Ok();
             }

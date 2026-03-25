@@ -1,11 +1,15 @@
-using FinanceSystem.Application.Facades;
+using FinanceSystem.API.Services;
 using FinanceSystem.Application.Services.AdminServices;
 using FinanceSystem.Application.Services.ClientServices;
 using FinanceSystem.Application.Services.Common;
 using FinanceSystem.Application.Services.ManagerServices;
 using FinanceSystem.Infrastructure;
 using FInanceSystem.Domain.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,8 +40,24 @@ builder.Services.AddScoped<SeedService>();
 
 builder.Services.AddControllers();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CurrentUserService>();
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "FinanceSystem API", Version = "v1" });
+
+    c.AddSecurityDefinition("X-UserId", new OpenApiSecurityScheme
+    {
+        Name = "X-UserId",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "Enter Id"
+    });
+});
 
 var app = builder.Build();
 

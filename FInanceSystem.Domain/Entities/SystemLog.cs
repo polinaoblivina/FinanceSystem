@@ -29,6 +29,7 @@ namespace FInanceSystem.Domain.Entities
                 throw new ArgumentException("Invalid user id", nameof(userId));
 
             Id = id;
+            Number = number;
             UserId = userId;
             Action = action;
             TargetId = targetId;

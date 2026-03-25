@@ -15,7 +15,7 @@ namespace FinanceSystem.Application.Services.Common
         }
 
         public async Task<User> Login(string login, string password)
-        {
+        { 
             if (string.IsNullOrWhiteSpace(login))
                 throw new ArgumentException("Invalid login", nameof(login));
 
@@ -30,7 +30,9 @@ namespace FinanceSystem.Application.Services.Common
             if (user.Password != password)
                 throw new UnauthorizedAccessException("Invalid password");
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(user.Id, ActionType.Login));
+
+            var log = SystemLog.Create(user.Id, ActionType.Login);
+            await _unitOfWork.Logs.AddAsync(log);
             await _unitOfWork.SaveChangesAsync();
 
             return user;

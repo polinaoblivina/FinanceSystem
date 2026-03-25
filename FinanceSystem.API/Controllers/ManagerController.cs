@@ -1,9 +1,12 @@
-﻿using FinanceSystem.Application.Services.ClientServices;
+﻿using FinanceSystem.API.Services;
+using FinanceSystem.Application.Services.ClientServices;
 using FinanceSystem.Application.Services.ManagerServices;
 using FInanceSystem.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq.Expressions;
+
 
 namespace FinanceSystem.API.Controllers
 {
@@ -15,20 +18,23 @@ namespace FinanceSystem.API.Controllers
         private readonly ClientManagementService _clientManagementService;
         private readonly EnterpriseManagementService _enterpriseManagementService;
         private readonly SalaryRequestService _salaryRequestService;
+        private readonly CurrentUserService _currentUserService;
 
-        public ManagerController(AccountControlService accountControlService, ClientManagementService clientManagementService, EnterpriseManagementService enterpriseManagementService, SalaryRequestService salaryRequestService)
+        public ManagerController(AccountControlService accountControlService, ClientManagementService clientManagementService, EnterpriseManagementService enterpriseManagementService, SalaryRequestService salaryRequestService, CurrentUserService currentUserService)
         {
             _accountControlService = accountControlService;
             _clientManagementService = clientManagementService;
             _enterpriseManagementService = enterpriseManagementService;
             _salaryRequestService = salaryRequestService;
+            _currentUserService = currentUserService;
         }
 
         [HttpPost("approve-client")]
-        public async Task<IActionResult> ApproveClient(Guid managerId, string clientLogin)
+        public async Task<IActionResult> ApproveClient(string clientLogin)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _clientManagementService.ApproveClient(managerId, clientLogin);
                 return Ok();
             }
@@ -53,10 +59,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("add-client-to-enterprise")]
-        public async Task<IActionResult> AddClientToEnterprise(Guid managerId, string clientLogin, string enterpriseName)
+        public async Task<IActionResult> AddClientToEnterprise(string clientLogin, string enterpriseName)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _enterpriseManagementService.AddClientToEnterprise(managerId, clientLogin, enterpriseName);
                 return Ok();
             }
@@ -67,10 +74,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("remove-client-from-enterprise")]
-        public async Task<IActionResult> RemoveClientFromEnterprise(Guid managerId, string clientLogin, string enterpriseName)
+        public async Task<IActionResult> RemoveClientFromEnterprise(string clientLogin, string enterpriseName)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _enterpriseManagementService.RemoveClientFromEnterprise(managerId, clientLogin, enterpriseName);
                 return Ok();
             }
@@ -95,10 +103,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("approve-salary-request")]
-        public async Task<IActionResult> ApproveSalaryRequest(Guid managerId, string requestNumber)
+        public async Task<IActionResult> ApproveSalaryRequest(string requestNumber)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _salaryRequestService.ApproveSalaryRequest(managerId, requestNumber);
                 return Ok();
             }
@@ -109,10 +118,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("reject-salary-request")]
-        public async Task<IActionResult> RejectSalaryRequest(Guid managerId, string requestNumber)
+        public async Task<IActionResult> RejectSalaryRequest(string requestNumber)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _salaryRequestService.RejectSalaryRequest(managerId, requestNumber);
                 return Ok();
             }
@@ -123,10 +133,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("block-account")]
-        public async Task<IActionResult> BlockAccount(Guid managerId, string accountNumber)
+        public async Task<IActionResult> BlockAccount(string accountNumber)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _accountControlService.BlockAccount(managerId, accountNumber);
                 return Ok();
             }
@@ -137,10 +148,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("unblock-account")]
-        public async Task<IActionResult> UnblockAccount(Guid managerId, string accountNumber)
+        public async Task<IActionResult> UnblockAccount(string accountNumber)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _accountControlService.UnblockAccount(managerId, accountNumber);
                 return Ok();
             }
@@ -151,10 +163,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("block-deposit")]
-        public async Task<IActionResult> BlockDeposit(Guid managerId, string depositNumber)
+        public async Task<IActionResult> BlockDeposit(string depositNumber)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _accountControlService.BlockDeposit(managerId, depositNumber);
                 return Ok();
             }
@@ -165,10 +178,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("unblock-deposit")]
-        public async Task<IActionResult> UnblockDeposit(Guid managerId, string depositNumber)
+        public async Task<IActionResult> UnblockDeposit(string depositNumber)
         {
             try
             {
+                var managerId = _currentUserService.GetCurrentUserId();
                 await _accountControlService.UnblockDeposit(managerId, depositNumber);
                 return Ok();
             }

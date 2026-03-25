@@ -1,6 +1,10 @@
 ﻿using FinanceSystem.Application.Services.Common;
-using Microsoft.AspNetCore.Http;
+using FInanceSystem.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace FinanceSystem.API.Controllers
 {
@@ -9,10 +13,12 @@ namespace FinanceSystem.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(AuthService authService)
+        public AuthController(AuthService authService, IConfiguration configuration)
         {
             _authService = authService;
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
@@ -21,12 +27,41 @@ namespace FinanceSystem.API.Controllers
             try
             {
                 var user = await _authService.Login(login, password);
-                return Ok(user);
-            } 
+
+                var token = GenerateJwtToken(user);
+
+                return Ok(new
+                {
+                    token = token,
+                    userId = user.Id,
+                    login = user.Login,
+                    role = user is Client ? "Client" :
+                           user is Admin ? "Admin" : "Manager"
+                });
+            }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+
+            var token = new JwtSecurityToken(
+                claims: new[]
+                {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Name, user.Login),
+            new Claim(ClaimTypes.Role, user is Client ? "Client" :
+                                      user is Admin ? "Admin" : "Manager")
+                },
+                expires: DateTime.UtcNow.AddHours(24),
+                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         [HttpPost("logout")]

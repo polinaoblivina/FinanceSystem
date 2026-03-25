@@ -5,22 +5,26 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using FInanceSystem.Domain.Utils;
 
 namespace FInanceSystem.Domain.Entities
 {
     public class Account
     {
         public Guid Id { get; private set; }
+        public string? Number { get; private set; }
         public Guid ClientId { get; private set; }
         public Guid BankId { get; private set; }
         public decimal Balance { get; private set; }
         public AccountStatus Status { get; private set; }
 
         private Account() { }
-        private Account(Guid id, Guid clientId, Guid bankId, decimal balance, AccountStatus status)
+        private Account(Guid id, string number, Guid clientId, Guid bankId, decimal balance, AccountStatus status)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("Invalid account id", nameof(id));
+            if (string.IsNullOrWhiteSpace(number))
+                throw new ArgumentException("Invalid account number", nameof(number));
             if (clientId == Guid.Empty)
                 throw new ArgumentException("Invalid client id", nameof(clientId));
             if (bankId == Guid.Empty)
@@ -29,19 +33,21 @@ namespace FInanceSystem.Domain.Entities
                 throw new ArgumentException("Invalid balance",nameof(balance));
 
             Id = id;
+            Number = number;
             ClientId = clientId;
             BankId = bankId;
             Balance = balance;
             Status = status;
         }
+
         public static Account CreateNew(Guid clientId, Guid bankId)
         {
-            return new Account(Guid.NewGuid(), clientId, bankId, 0, AccountStatus.Active);
+            return new Account(Guid.NewGuid(), FInanceSystem.Domain.Utils.Utils.GenerateAccountNumber(), clientId, bankId, 0, AccountStatus.Active);
         }
 
-        public static Account Restore(Guid id, Guid clientId, Guid bankId, decimal balance, AccountStatus status)
+        public static Account Restore(Guid id, string number, Guid clientId, Guid bankId, decimal balance, AccountStatus status)
         {
-            return new Account(id, clientId, bankId, balance, status);
+            return new Account(id, number, clientId, bankId, balance, status);
         }
         public void Close()
         {

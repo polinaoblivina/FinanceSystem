@@ -70,11 +70,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("open-account")]
-        public async Task<IActionResult> OpenAccount(Guid clientId, Guid bankId)
+        public async Task<IActionResult> OpenAccount(Guid clientId, string bankName)
         {
             try
             {
-                var account = await _accountService.OpenAccount(clientId, bankId);
+                var account = await _accountService.OpenAccount(clientId, bankName);
                 return Ok(account);
             }
             catch (Exception ex)
@@ -84,11 +84,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("close-account")]
-        public async Task<IActionResult> CloseAccount(Guid clientId, Guid accountId)
+        public async Task<IActionResult> CloseAccount(Guid clientId, string accountNumber)
         {
             try
             {
-                await _accountService.CloseAccount(clientId, accountId);
+                await _accountService.CloseAccount(clientId, accountNumber);
                 return Ok();
             }
             catch (Exception ex)
@@ -98,11 +98,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpGet("account-transactions")]
-        public async Task<IActionResult> GetAccountTransactions(Guid clientId, Guid accountId)
+        public async Task<IActionResult> GetAccountTransactions(Guid clientId, string accountNumber)
         {
             try
             {
-                var transactions = await _accountService.GetTransactions(clientId, accountId);
+                var transactions = await _accountService.GetTransactions(clientId, accountNumber);
                 return Ok(transactions);
             }
             catch (Exception ex)
@@ -112,11 +112,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("create-deposit")]
-        public async Task<IActionResult> CreateDeposit(Guid clientId, Guid bankId, decimal amount, double rate, DepositType type)
+        public async Task<IActionResult> CreateDeposit(Guid clientId, string accountNumber, decimal amount, double rate, DepositType type)
         {
             try
             {
-                var deposit = await _depositService.CreateDeposit(clientId, bankId, amount, rate, type);
+                var deposit = await _depositService.CreateDeposit(clientId, accountNumber, amount, rate, type);
                 return Ok(deposit);
             }
             catch (Exception ex)
@@ -126,11 +126,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("close-deposit")]
-        public async Task<IActionResult> CloseDeposit(Guid clientId, Guid depositId, Guid accountId)
+        public async Task<IActionResult> CloseDeposit(Guid clientId, string depositNumber, string accountNumber)
         {
             try
             {
-                await _depositService.CloseDeposit(clientId, depositId, accountId);
+                await _depositService.CloseDeposit(clientId, depositNumber, accountNumber);
                 return Ok();
             }
             catch (Exception ex)
@@ -140,11 +140,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("accrue-interest")]
-        public async Task<IActionResult> AccrueInterest(Guid clientId, Guid depositId)
+        public async Task<IActionResult> AccrueInterest(Guid clientId, string depositNumber)
         {
             try
             {
-                await _depositService.AccrueInterest(clientId, depositId);
+                await _depositService.AccrueInterest(clientId, depositNumber);
                 return Ok();
             }
             catch (Exception ex)
@@ -154,11 +154,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("transfer-account-to-account")]
-        public async Task<IActionResult> TransferAccountToAccount(Guid clientId, Guid fromAccountId, Guid toAccountId, decimal amount)
+        public async Task<IActionResult> TransferAccountToAccount(Guid clientId, string fromAccountNumber, string toAccountNumber, decimal amount)
         {
             try
             {
-                await _transferService.TransferAccountToAccount(clientId, fromAccountId, toAccountId, amount);
+                await _transferService.TransferAccountToAccount(clientId, fromAccountNumber, toAccountNumber, amount);
                 return Ok();
             }
             catch (Exception ex)
@@ -168,11 +168,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("transfer-account-to-deposit")]
-        public async Task<IActionResult> TransferAccountToDeposit(Guid clientId, Guid accountId, Guid depositId, decimal amount)
+        public async Task<IActionResult> TransferAccountToDeposit(Guid clientId, string accountNumber, string depositNumber, decimal amount)
         {
             try
             {
-                await _transferService.TransferAccountToDeposit(clientId, accountId, depositId, amount);
+                await _transferService.TransferAccountToDeposit(clientId, accountNumber, depositNumber, amount);
                 return Ok();
             }
             catch (Exception ex)
@@ -182,11 +182,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("transfer-deposit-to-account")]
-        public async Task<IActionResult> TransferDepositToAccount(Guid clientId, Guid depositId, Guid accountId, decimal amount)
+        public async Task<IActionResult> TransferDepositToAccount(Guid clientId, string depositNumber, string accountNumber, decimal amount)
         {
             try
             {
-                await _transferService.TransferDepositToAccount(clientId, depositId, accountId, amount);
+                await _transferService.TransferDepositToAccount(clientId, depositNumber, accountNumber, amount);
                 return Ok();
             }
             catch (Exception ex)
@@ -196,11 +196,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("transfer-deposit-to-deposit")]
-        public async Task<IActionResult> TransferDepositToDeposit(Guid clientId, Guid fromDepositId, Guid toDepositId, decimal amount)
+        public async Task<IActionResult> TransferDepositToDeposit(Guid clientId, string fromDepositNumber, string toDepositNumber, decimal amount)
         {
             try
             {
-                await _transferService.TransferDepositToDeposit(clientId, fromDepositId, toDepositId, amount);
+                await _transferService.TransferDepositToDeposit(clientId, fromDepositNumber, toDepositNumber, amount);
                 return Ok();
             }
             catch (Exception ex)
@@ -210,11 +210,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("request-salary-project")]
-        public async Task<IActionResult> RequestSalaryProject(Guid clientId, Guid enterpriseId)
+        public async Task<IActionResult> RequestSalaryProject(Guid clientId, string enterpriseName)
         {
             try
             {
-                await _salaryService.RequestSalaryProject(clientId, enterpriseId);
+                await _salaryService.RequestSalaryProject(clientId, enterpriseName);
                 return Ok();
             }
             catch (Exception ex)
@@ -224,11 +224,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("receive-salary")]
-        public async Task<IActionResult> ReceiveSalary(Guid clientId, Guid enterpriseId, Guid accountId, decimal amount)
+        public async Task<IActionResult> ReceiveSalary(Guid clientId, string enterpriseName, string accountNumber, decimal amount)
         {
             try
             {
-                await _salaryService.ReceiveSalary(clientId, enterpriseId, accountId, amount);
+                await _salaryService.ReceiveSalary(clientId, enterpriseName, accountNumber, amount);
                 return Ok();
             }
             catch (Exception ex)

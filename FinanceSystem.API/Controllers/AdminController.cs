@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FinanceSystem.API.Services;
 using FinanceSystem.Application.Services.AdminServices;
 
 namespace FinanceSystem.API.Controllers
@@ -33,11 +34,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("revert-action")]
-        public async Task<IActionResult> RevertAction(Guid adminId, Guid logId)
+        public async Task<IActionResult> RevertAction(Guid adminId, string logNumber)
         {
             try
             {
-                await _actionRevertService.RevertByLogId(adminId, logId);
+                await _actionRevertService.RevertByLogId(adminId, logNumber);
                 return Ok();
             }
             catch (Exception ex)

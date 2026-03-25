@@ -30,5 +30,9 @@ namespace FinanceSystem.Infrastructure.Repositories
             return await _dbContext.Enterprises
                                     .FindAsync(id);
         }
+        public async Task<Enterprise?> GetByNameAsync(string name)
+        {
+            return await _dbContext.Enterprises.FirstOrDefaultAsync(e => e.Name == name);
+        }
     }
 }

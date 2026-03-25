@@ -12,5 +12,6 @@ namespace FInanceSystem.Domain.Repositories
         Task<Enterprise?> GetByIdAsync(Guid id);
         Task<List<Enterprise>> GetAllAsync();
         Task AddAsync(Enterprise enterprise);
+        Task<Enterprise?> GetByNameAsync(string name);
     }
 }

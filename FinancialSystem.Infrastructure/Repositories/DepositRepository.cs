@@ -31,6 +31,11 @@ namespace FinanceSystem.Infrastructure.Repositories
         {
             return await _dbContext.Deposits.FindAsync(id);
         }
+        public async Task<Deposit?> GetByNumberAsync(string number)
+        {
+            return await _dbContext.Deposits
+                            .FirstOrDefaultAsync(dep => dep.Number == number);
+        }
         public Task UpdateAsync(Deposit deposit)
         {
             _dbContext.Deposits.Update(deposit);

@@ -11,6 +11,7 @@ namespace FInanceSystem.Domain.Repositories
     {
         Task<SalaryProjectRequest?> GetByIdAsync(Guid id);
         Task<List<SalaryProjectRequest>> GetPendingAsync();
+        Task<SalaryProjectRequest?> GetByNumberAsync(string number);
         Task<List<SalaryProjectRequest>> GetByClientIdAsync(Guid clientId);
         Task<SalaryProjectRequest?> GetByClientAndEnterpriseAsync(Guid clientId, Guid enterpriseId);
         Task AddAsync(SalaryProjectRequest request);

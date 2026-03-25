@@ -33,6 +33,11 @@ namespace FinanceSystem.Infrastructure.Repositories
             return await _dbContext.Accounts.FindAsync(id);
         }
 
+        public async Task<Account?> GetByNumberAsync(string number)
+        {
+            return await _dbContext.Accounts
+                            .FirstOrDefaultAsync(a => a.Number == number);
+        }
         public Task UpdateAsync(Account account)
         {
             _dbContext.Accounts.Update(account);

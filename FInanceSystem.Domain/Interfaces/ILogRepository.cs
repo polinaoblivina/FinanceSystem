@@ -12,5 +12,6 @@ namespace FInanceSystem.Domain.Repositories
         Task<SystemLog?> GetByIdAsync(Guid id);
         Task<List<SystemLog>> GetAllAsync();
         Task AddAsync(SystemLog log);
+        Task<SystemLog?> GetByNumberAsync(string number);
     }
 }

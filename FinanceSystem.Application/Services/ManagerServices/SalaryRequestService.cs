@@ -18,26 +18,30 @@ namespace FinanceSystem.Application.Services.ManagerServices
             _unitOfWork = unitOfWork;
         }
 
-        public async Task ApproveSalaryRequest(Guid managerId, Guid requestId)
+        public async Task ApproveSalaryRequest(Guid managerId, string requestNumber)
         {
-            var request = await _unitOfWork.SalaryRequests.GetByIdAsync(requestId);
+            var request = await _unitOfWork.SalaryRequests.GetByNumberAsync(requestNumber);
             if (request == null)
                 throw new InvalidOperationException("Request not found");
 
             request.Approve();
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Approve, requestId, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Approve, request.Id, LogTargetType.SalaryProjectRequest));
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task RejectSalaryRequest(Guid managerId, Guid requestId)
+        public async Task RejectSalaryRequest(Guid managerId, string requestNumber)
         {
-            var request = await _unitOfWork.SalaryRequests.GetByIdAsync(requestId);
+            var request = await _unitOfWork.SalaryRequests.GetByNumberAsync(requestNumber);
             if (request == null)
                 throw new InvalidOperationException("Request not found");
 
             request.Reject();
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Reject, requestId, LogTargetType.SalaryProjectRequest));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Reject, request.Id, LogTargetType.SalaryProjectRequest));
             await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task<List<SalaryProjectRequest>> GetPendingRequests()
+        {
+            return await _unitOfWork.SalaryRequests.GetPendingAsync();
         }
     }
 }

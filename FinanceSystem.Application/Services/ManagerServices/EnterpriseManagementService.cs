@@ -17,42 +17,42 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task AddClientToEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+        public async Task AddClientToEnterprise(Guid managerId, string clientLogin, string enterpriseName)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
-            if (user == null)
+            var client = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
+            if (client == null)
                 throw new InvalidOperationException("User not found");
-            if (user is not Client)
+            if (client is not Client)
                 throw new InvalidOperationException("User is not a client");
 
-            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var existingEmployment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
+            var existingEmployment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(client.Id, enterprise.Id);
             if (existingEmployment != null)
                 throw new InvalidOperationException("Client is already added to this enterprise");
 
-            var employment = Employment.CreateNew(clientId, enterpriseId);
+            var employment = Employment.CreateNew(client.Id, enterprise.Id);
             await _unitOfWork.Employments.AddAsync(employment);
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Create, employment.Id, LogTargetType.Employment));
 
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task RemoveClientFromEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+        public async Task RemoveClientFromEnterprise(Guid managerId, string clientLogin, string enterpriseName)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
-            if (user == null)
+            var client = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
+            if (client == null)
                 throw new InvalidOperationException("User not found");
-            if (user is not Client)
+            if (client is not Client)
                 throw new InvalidOperationException("User is not a client");
 
-            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
+            var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(client.Id, enterprise.Id);
             if (employment == null)
                 throw new InvalidOperationException("Client is not employed at this enterprise");
 

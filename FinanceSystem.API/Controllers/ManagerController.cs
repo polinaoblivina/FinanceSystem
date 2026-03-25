@@ -25,11 +25,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("approve-client")]
-        public async Task<IActionResult> ApproveClient(Guid managerId, Guid clientId)
+        public async Task<IActionResult> ApproveClient(Guid managerId, string clientLogin)
         {
             try
             {
-                await _clientManagementService.ApproveClient(managerId, clientId);
+                await _clientManagementService.ApproveClient(managerId, clientLogin);
                 return Ok();
             }
             catch (Exception ex)
@@ -53,11 +53,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("add-client-to-enterprise")]
-        public async Task<IActionResult> AddClientToEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+        public async Task<IActionResult> AddClientToEnterprise(Guid managerId, string clientLogin, string enterpriseName)
         {
             try
             {
-                await _enterpriseManagementService.AddClientToEnterprise(managerId, clientId, enterpriseId);
+                await _enterpriseManagementService.AddClientToEnterprise(managerId, clientLogin, enterpriseName);
                 return Ok();
             }
             catch (Exception ex)
@@ -67,11 +67,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("remove-client-from-enterprise")]
-        public async Task<IActionResult> RemoveClientFromEnterprise(Guid managerId, Guid clientId, Guid enterpriseId)
+        public async Task<IActionResult> RemoveClientFromEnterprise(Guid managerId, string clientLogin, string enterpriseName)
         {
             try
             {
-                await _enterpriseManagementService.RemoveClientFromEnterprise(managerId, clientId, enterpriseId);
+                await _enterpriseManagementService.RemoveClientFromEnterprise(managerId, clientLogin, enterpriseName);
                 return Ok();
             }
             catch(Exception ex)
@@ -95,11 +95,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("approve-salary-request")]
-        public async Task<IActionResult> ApproveSalaryRequest(Guid managerId, Guid requestId)
+        public async Task<IActionResult> ApproveSalaryRequest(Guid managerId, string requestNumber)
         {
             try
             {
-                await _salaryRequestService.ApproveSalaryRequest(managerId, requestId);
+                await _salaryRequestService.ApproveSalaryRequest(managerId, requestNumber);
                 return Ok();
             }
             catch (Exception ex)
@@ -109,11 +109,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("reject-salary-request")]
-        public async Task<IActionResult> RejectSalaryRequest(Guid managerId, Guid requestId)
+        public async Task<IActionResult> RejectSalaryRequest(Guid managerId, string requestNumber)
         {
             try
             {
-                await _salaryRequestService.RejectSalaryRequest(managerId, requestId);
+                await _salaryRequestService.RejectSalaryRequest(managerId, requestNumber);
                 return Ok();
             }
             catch(Exception ex)
@@ -123,11 +123,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("block-account")]
-        public async Task<IActionResult> BlockAccount(Guid managerId, Guid accountId)
+        public async Task<IActionResult> BlockAccount(Guid managerId, string accountNumber)
         {
             try
             {
-                await _accountControlService.BlockAccount(managerId, accountId);
+                await _accountControlService.BlockAccount(managerId, accountNumber);
                 return Ok();
             }
             catch (Exception ex)
@@ -137,11 +137,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("unblock-account")]
-        public async Task<IActionResult> UnblockAccount(Guid managerId, Guid accountId)
+        public async Task<IActionResult> UnblockAccount(Guid managerId, string accountNumber)
         {
             try
             {
-                await _accountControlService.UnblockAccount(managerId, accountId);
+                await _accountControlService.UnblockAccount(managerId, accountNumber);
                 return Ok();
             }
             catch(Exception ex)
@@ -151,11 +151,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("block-deposit")]
-        public async Task<IActionResult> BlockDeposit(Guid managerId, Guid depositId)
+        public async Task<IActionResult> BlockDeposit(Guid managerId, string depositNumber)
         {
             try
             {
-                await _accountControlService.BlockDeposit(managerId, depositId);
+                await _accountControlService.BlockDeposit(managerId, depositNumber);
                 return Ok();
             }
             catch (Exception ex)
@@ -165,11 +165,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("unblock-deposit")]
-        public async Task<IActionResult> UnblockDeposit(Guid managerId, Guid depositId)
+        public async Task<IActionResult> UnblockDeposit(Guid managerId, string depositNumber)
         {
             try
             {
-                await _accountControlService.UnblockDeposit(managerId, depositId);
+                await _accountControlService.UnblockDeposit(managerId, depositNumber);
                 return Ok();
             }
             catch(Exception ex)
@@ -180,11 +180,11 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpGet("account-transactions")]
-        public async Task<IActionResult> GetAccountTransactions(Guid accountId)
+        public async Task<IActionResult> GetAccountTransactions(string accountNumber)
         {
             try
             {
-                var transactions = await _accountControlService.GetAccountTransactions(accountId);
+                var transactions = await _accountControlService.GetAccountTransactions(accountNumber);
                 return Ok(transactions);
             }
             catch (Exception ex)

@@ -17,60 +17,60 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task BlockAccount(Guid managerId, Guid accountId)
+        public async Task BlockAccount(Guid managerId, string accountNumber)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
 
             account.Block();
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Block, accountId, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Block, account.Id, LogTargetType.Account));
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task UnblockAccount(Guid managerId, Guid accountId)
+        public async Task UnblockAccount(Guid managerId, string accountNumber)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
 
             account.Unblock();
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Unblock, accountId, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Unblock, account.Id, LogTargetType.Account));
 
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task BlockDeposit(Guid managerId, Guid depositId)
+        public async Task BlockDeposit(Guid managerId, string depositNumber)
         {
-            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
+            var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             if (deposit == null)
                 throw new InvalidOperationException("Deposit not found");
 
             deposit.Block();
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Block, depositId, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Block, deposit.Id, LogTargetType.Deposit));
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task UnblockDeposit(Guid managerId, Guid depositId)
+        public async Task UnblockDeposit(Guid managerId, string depositNumber)
         {
-            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
+            var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             if (deposit == null)
                 throw new InvalidOperationException("Deposit not found");
 
             deposit.Unblock();
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Unblock, depositId, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Unblock, deposit.Id, LogTargetType.Deposit));
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<List<Transaction>> GetAccountTransactions(Guid accountId)
+        public async Task<List<Transaction>> GetAccountTransactions(string accountNumber)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
 
-            return await _unitOfWork.Transactions.GetByAccountIdAsync(accountId);
+            return await _unitOfWork.Transactions.GetByAccountIdAsync(account.Id);
         }
     }
 }

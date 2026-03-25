@@ -29,5 +29,10 @@ namespace FinanceSystem.Infrastructure.Repositories
         {
             return await _dbContext.Logs.FindAsync(id);
         }
+
+        public async Task<SystemLog?> GetByNumberAsync(string number)
+        {
+            return await _dbContext.Logs.FirstOrDefaultAsync(log => log.Number == number);
+        }
     }
 }

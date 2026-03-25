@@ -18,11 +18,11 @@ namespace FinanceSystem.Application.Services.AdminServices
             _unitOfWork = unitOfWork;
         }
 
-        public async Task RevertByLogId(Guid adminId, Guid logId)
+        public async Task RevertByLogId(Guid adminId, string logNumber)
         {
-            var log = await _unitOfWork.Logs.GetByIdAsync(logId);
+            var log = await _unitOfWork.Logs.GetByNumberAsync(logNumber);
             if (log == null)
-                throw new InvalidOperationException($"Log with id {logId} not found");
+                throw new InvalidOperationException($"Log with id {log.Id} not found");
 
             if (log.Action == ActionType.Login || log.Action == ActionType.Logout)
                 throw new InvalidOperationException("Cannot revert login/logout actions");

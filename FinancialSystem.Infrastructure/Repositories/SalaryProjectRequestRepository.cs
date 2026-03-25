@@ -27,6 +27,11 @@ namespace FinanceSystem.Infrastructure.Repositories
                                         .FirstOrDefaultAsync(req => req.EnterpriseId == enterpriseId && req.ClientId == clientId);
         }
 
+        public async Task<SalaryProjectRequest?> GetByNumberAsync(string number)
+        {
+            return await _dbContext.SalaryProjectRequests.FirstOrDefaultAsync(req => req.Number == number);
+        }
+
         public async Task<List<SalaryProjectRequest>> GetByClientIdAsync(Guid clientId)
         {
             return await _dbContext.SalaryProjectRequests

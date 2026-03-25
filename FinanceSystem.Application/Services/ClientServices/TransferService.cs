@@ -19,11 +19,11 @@ namespace FinanceSystem.Application.Services.ClientServices
             _unitOfWork = unitOfWork;
         }
 
-        public async Task TransferAccountToAccount(Guid clientId, Guid fromAccountId, Guid toAccountId, decimal amount)
+        public async Task TransferAccountToAccount(Guid clientId, string fromAccountNumber, string toAccountNumber, decimal amount)
         {
 
-            var from = await _unitOfWork.Accounts.GetByIdAsync(fromAccountId);
-            var to = await _unitOfWork.Accounts.GetByIdAsync(toAccountId);
+            var from = await _unitOfWork.Accounts.GetByNumberAsync(fromAccountNumber);
+            var to = await _unitOfWork.Accounts.GetByNumberAsync(toAccountNumber);
 
             if (from == null || to == null)
                 throw new InvalidOperationException("Account not found");
@@ -31,23 +31,23 @@ namespace FinanceSystem.Application.Services.ClientServices
             if (from.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
-            if (fromAccountId == toAccountId)
+            if (from.Id == to.Id)
                 throw new InvalidOperationException("Cannot transfer to the same account");
 
             from.DecreaseBalance(amount);
             to.IncreaseBalance(amount);
 
-            var transaction = Transaction.CreateNew(fromAccountId, toAccountId,amount, TransactionType.TransferAccountToAccount );
+            var transaction = Transaction.CreateNew(from.Id, to.Id ,amount, TransactionType.TransferAccountToAccount );
             await _unitOfWork.Transactions.AddAsync(transaction);
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, fromAccountId, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, from.Id, LogTargetType.Account));
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task TransferAccountToDeposit(Guid clientId, Guid accountId, Guid depositId, decimal amount)
+        public async Task TransferAccountToDeposit(Guid clientId, string accountNumber, string depositNumber, decimal amount)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
-            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
+            var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
 
             if (account == null || deposit == null)
                 throw new InvalidOperationException("Entity not found");
@@ -58,17 +58,17 @@ namespace FinanceSystem.Application.Services.ClientServices
             account.DecreaseBalance(amount);
             deposit.IncreaseBalance(amount);
 
-            var transaction = Transaction.CreateNew( accountId, depositId, amount, TransactionType.TransferAccountToDeposit);
+            var transaction = Transaction.CreateNew( account.Id, deposit.Id, amount, TransactionType.TransferAccountToDeposit);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, accountId, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, account.Id, LogTargetType.Account));
 
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task TransferDepositToAccount(Guid clientId, Guid depositId, Guid accountId, decimal amount)
+        public async Task TransferDepositToAccount(Guid clientId, string depositNumber, string accountNumber, decimal amount)
         {
-            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
 
             if (deposit == null || account == null)
                 throw new InvalidOperationException("Entity not found");
@@ -79,17 +79,17 @@ namespace FinanceSystem.Application.Services.ClientServices
             deposit.DecreaseBalance(amount);
             account.IncreaseBalance(amount);
 
-            var transaction = Transaction.CreateNew(depositId, accountId, amount, TransactionType.TransferDepositToAccount);
+            var transaction = Transaction.CreateNew(deposit.Id, account.Id, amount, TransactionType.TransferDepositToAccount);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, depositId, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, deposit.Id, LogTargetType.Deposit));
 
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task TransferDepositToDeposit(Guid clientId, Guid fromDepositId, Guid toDepositId, decimal amount)
+        public async Task TransferDepositToDeposit(Guid clientId, string fromDepositNumber, string toDepositNumber, decimal amount)
         {
-            var from = await _unitOfWork.Deposits.GetByIdAsync(fromDepositId);
-            var to = await _unitOfWork.Deposits.GetByIdAsync(toDepositId);
+            var from = await _unitOfWork.Deposits.GetByNumberAsync(fromDepositNumber);
+            var to = await _unitOfWork.Deposits.GetByNumberAsync(toDepositNumber);
 
             if (from == null || to == null)
                 throw new InvalidOperationException("Deposit not found");
@@ -97,15 +97,15 @@ namespace FinanceSystem.Application.Services.ClientServices
             if (from.ClientId != clientId)
                 throw new InvalidOperationException("Not your deposit");
 
-            if (fromDepositId == toDepositId)
+            if (from.Id == to.Id)
                 throw new InvalidOperationException("Cannot transfer to the same account");
 
             from.DecreaseBalance(amount);
             to.IncreaseBalance(amount);
 
-            var transaction = Transaction.CreateNew(fromDepositId, toDepositId, amount, TransactionType.TransferDepositToDeposit);
+            var transaction = Transaction.CreateNew(from.Id, to.Id, amount, TransactionType.TransferDepositToDeposit);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, fromDepositId, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, from.Id, LogTargetType.Deposit));
 
             await _unitOfWork.SaveChangesAsync();
         }

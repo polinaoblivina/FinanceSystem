@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using FInanceSystem.Domain.Utils;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FInanceSystem.Domain.Entities
@@ -12,6 +13,7 @@ namespace FInanceSystem.Domain.Entities
     public class Deposit
     {
         public Guid Id { get; private set; }
+        public string? Number { get; private set; }
         public Guid ClientId { get; private set; }
         public Guid BankId { get; private set; }
         public decimal Balance { get; private set; }
@@ -21,10 +23,12 @@ namespace FInanceSystem.Domain.Entities
         public DateTime LastInterestDate { get; private set; }
 
         private Deposit() { }
-        private Deposit(Guid id, Guid clientId, Guid bankId, decimal balance, double interestRate, DepositType depositType, DepositStatus status, DateTime lastInterestDate)
+        private Deposit(Guid id, string number, Guid clientId, Guid bankId, decimal balance, double interestRate, DepositType depositType, DepositStatus status, DateTime lastInterestDate)
         {
             if (id == Guid.Empty)
                 throw new ArgumentException("Invalid deposite id", nameof(id));
+            if (string.IsNullOrWhiteSpace(number))
+                throw new ArgumentException("Invalid deposit number", nameof(number));
             if (clientId == Guid.Empty)
                 throw new ArgumentException("Invalid client id", nameof(clientId));
             if (bankId == Guid.Empty)
@@ -35,6 +39,7 @@ namespace FInanceSystem.Domain.Entities
                 throw new ArgumentException("Invalid interest rate", nameof(interestRate));
 
             Id = id;
+            Number = number;
             ClientId = clientId;
             BankId = bankId;
             Balance = balance;
@@ -45,12 +50,12 @@ namespace FInanceSystem.Domain.Entities
         }
         public static Deposit CreateNew(Guid clientId, Guid bankId, decimal balance, double interestRate, DepositType type)
         {
-            return new Deposit(Guid.NewGuid(), clientId, bankId, balance, interestRate, type, DepositStatus.Active, DateTime.UtcNow);
+            return new Deposit(Guid.NewGuid(), FInanceSystem.Domain.Utils.Utils.GenerateDepositNumber(), clientId, bankId, balance, interestRate, type, DepositStatus.Active, DateTime.UtcNow);
         }
 
-        public static Deposit Restore(Guid id, Guid clientId, Guid bankId, decimal balance, double interestRate, DepositType depositType, DepositStatus status, DateTime lastInterestDate)
+        public static Deposit Restore(Guid id, string number, Guid clientId, Guid bankId, decimal balance, double interestRate, DepositType depositType, DepositStatus status, DateTime lastInterestDate)
         {
-            return new Deposit(id, clientId, bankId, balance, interestRate, depositType, status, lastInterestDate);
+            return new Deposit(id, number, clientId, bankId, balance, interestRate, depositType, status, lastInterestDate);
         }
 
         public void Close()

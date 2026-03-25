@@ -18,17 +18,17 @@ namespace FinanceSystem.Application.Services.ClientServices
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task RequestSalaryProject(Guid clientId, Guid enterpriseId)
+        public async Task RequestSalaryProject(Guid clientId, string enterpriseName)
         {
-            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var existing = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
+            var existing = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
             if (existing != null)
                 throw new InvalidOperationException("Request already exists");
 
-            var request = SalaryProjectRequest.CreateNew(clientId, enterpriseId);
+            var request = SalaryProjectRequest.CreateNew(clientId, enterprise.Id);
 
             await _unitOfWork.SalaryRequests.AddAsync(request);
 
@@ -36,20 +36,20 @@ namespace FinanceSystem.Application.Services.ClientServices
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task ReceiveSalary(Guid clientId, Guid enterpriseId, Guid accountId, decimal amount)
+        public async Task ReceiveSalary(Guid clientId, string enterpriseName, string accountNumber, decimal amount)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
 
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
-            var enterprise = await _unitOfWork.Enterprises.GetByIdAsync(enterpriseId);
+            var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
 
-            var request = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterpriseId);
+            var request = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
 
             if (request == null)
                 throw new InvalidOperationException("No salary project request found");
@@ -60,9 +60,9 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             account.IncreaseBalance(amount);
 
-            var transaction = Transaction.CreateNew(enterpriseId, accountId, amount, TransactionType.SalaryPayment);
+            var transaction = Transaction.CreateNew(enterprise.Id, account.Id, amount, TransactionType.SalaryPayment);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.ReceiveSalary, accountId, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.ReceiveSalary, account.Id, LogTargetType.Account));
 
             await _unitOfWork.SaveChangesAsync();
         }

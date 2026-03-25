@@ -30,6 +30,11 @@ namespace FinanceSystem.Infrastructure.Repositories
             return await _dbContext.Transactions
                                     .FindAsync(id);
         }
+        public async Task<Transaction?> GetByNumberAsync(string number)
+        {
+            return await _dbContext.Transactions
+                            .FirstOrDefaultAsync(t => t.Number == number);
+        }
         public async Task<List<Transaction>> GetByAccountIdAsync(Guid accountId)
         {
             return await _dbContext.Transactions

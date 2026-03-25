@@ -12,5 +12,6 @@ namespace FInanceSystem.Domain.Repositories
         Task<Bank?> GetByIdAsync(Guid id);
         Task<List<Bank>> GetAllAsync();
         Task AddAsync(Bank bank);
+        Task<Bank?> GetByNameAsync(string name);
     }
 }

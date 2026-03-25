@@ -18,13 +18,13 @@ namespace FinanceSystem.Application.Services.ClientServices
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<Account> OpenAccount(Guid clientId, Guid bankId)
+        public async Task<Account> OpenAccount(Guid clientId, string bankName)
         {
-            var bank = await _unitOfWork.Banks.GetByIdAsync(bankId);
+            var bank = await _unitOfWork.Banks.GetByNameAsync(bankName);
             if (bank == null)
                 throw new InvalidOperationException("Bank not found");
 
-            var account = Account.CreateNew(clientId, bankId);
+            var account = Account.CreateNew(clientId, bank.Id);
             await _unitOfWork.Accounts.AddAsync(account);
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Create, account.Id, LogTargetType.Account));
 
@@ -32,9 +32,9 @@ namespace FinanceSystem.Application.Services.ClientServices
             return account;
         }
 
-        public async Task CloseAccount(Guid clientId, Guid accountId)
+        public async Task CloseAccount(Guid clientId, string accountNumber)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
@@ -42,18 +42,18 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             account.Close();
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Close, accountId, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Close, account.Id, LogTargetType.Account));
             await _unitOfWork.SaveChangesAsync();
         }
-        public async Task<List<Transaction>> GetTransactions(Guid clientId, Guid accountId)
+        public async Task<List<Transaction>> GetTransactions(Guid clientId, string accountNumber)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
-            return await _unitOfWork.Transactions.GetByAccountIdAsync(accountId);
+            return await _unitOfWork.Transactions.GetByAccountIdAsync(account.Id);
         }
     }
 }

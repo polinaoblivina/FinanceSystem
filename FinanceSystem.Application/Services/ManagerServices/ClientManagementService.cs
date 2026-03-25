@@ -23,9 +23,9 @@ namespace FinanceSystem.Application.Services.ManagerServices
             return await _unitOfWork.Users.GetAllClients();
         }
 
-        public async Task ApproveClient(Guid managerId, Guid clientId)
+        public async Task ApproveClient(Guid managerId, string clientLogin)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            var user = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
             if (user == null)
                 throw new InvalidOperationException("User not found");
             if (user is not Client client)
@@ -33,7 +33,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
 
             client.Approve();
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Approve, clientId, LogTargetType.Client));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Approve, client.Id, LogTargetType.Client));
             await _unitOfWork.SaveChangesAsync();
         }
     }

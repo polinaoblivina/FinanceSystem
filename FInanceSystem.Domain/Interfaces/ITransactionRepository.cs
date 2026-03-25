@@ -10,6 +10,7 @@ namespace FInanceSystem.Domain.Repositories
     public interface ITransactionRepository
     {
         Task<Transaction?> GetByIdAsync(Guid id);
+        Task<Transaction?> GetByNumberAsync(string number);
         Task<List<Transaction>> GetAllAsync();
         Task<List<Transaction>> GetByAccountIdAsync(Guid accountId);  
         Task AddAsync(Transaction transaction);

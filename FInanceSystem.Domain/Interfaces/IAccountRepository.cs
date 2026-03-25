@@ -9,7 +9,8 @@ namespace FInanceSystem.Domain.Repositories
 {
     public interface IAccountRepository
     {
-        Task<Account?> GetByIdAsync(Guid id);                    
+        Task<Account?> GetByIdAsync(Guid id);
+        Task<Account?> GetByNumberAsync(string number);
         Task<List<Account>> GetByClientIdAsync(Guid clientId);   
         Task AddAsync(Account account);                          
         Task UpdateAsync(Account account);

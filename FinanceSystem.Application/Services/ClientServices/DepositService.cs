@@ -19,9 +19,9 @@ namespace FinanceSystem.Application.Services.ClientServices
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Deposit> CreateDeposit(Guid clientId, Guid accountId, decimal amount, double rate, DepositType type)
+        public async Task<Deposit> CreateDeposit(Guid clientId, string number, decimal amount, double rate, DepositType type)
         {
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(number);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
@@ -32,7 +32,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             await _unitOfWork.Deposits.AddAsync(deposit);
 
-            var transaction = Transaction.CreateNew(accountId, deposit.Id, amount,TransactionType.TransferAccountToDeposit);
+            var transaction = Transaction.CreateNew(account.Id, deposit.Id, amount,TransactionType.TransferAccountToDeposit);
             await _unitOfWork.Transactions.AddAsync(transaction);
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Create, deposit.Id, LogTargetType.Deposit));
 
@@ -40,15 +40,15 @@ namespace FinanceSystem.Application.Services.ClientServices
             return deposit;
         }
 
-        public async Task CloseDeposit(Guid clientId, Guid depositId, Guid accountId)
+        public async Task CloseDeposit(Guid clientId, string depositNumber, string accountNumber)
         {
-            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
+            var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             if (deposit == null)
                 throw new InvalidOperationException("Deposit not found");
             if (deposit.ClientId != clientId)
                 throw new InvalidOperationException("Not your deposit");
 
-            var account = await _unitOfWork.Accounts.GetByIdAsync(accountId);
+            var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
             if (account.ClientId != clientId)
@@ -59,16 +59,16 @@ namespace FinanceSystem.Application.Services.ClientServices
             account.IncreaseBalance(amount);
 
 
-            var transaction = Transaction.CreateNew(depositId, accountId, amount, TransactionType.TransferDepositToAccount);
+            var transaction = Transaction.CreateNew(deposit.Id, account.Id, amount, TransactionType.TransferDepositToAccount);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Close, depositId, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Close, deposit.Id, LogTargetType.Deposit));
 
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task AccrueInterest(Guid clientId, Guid depositId)
+        public async Task AccrueInterest(Guid clientId, string depositNumber)
         {
-            var deposit = await _unitOfWork.Deposits.GetByIdAsync(depositId);
+            var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
 
             if (deposit == null)
                 throw new InvalidOperationException("Deposit not found");
@@ -78,7 +78,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             deposit.AccrueInterest();
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.AccrueInterest, depositId, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.AccrueInterest, deposit.Id, LogTargetType.Deposit));
             await _unitOfWork.SaveChangesAsync();
         }
     }

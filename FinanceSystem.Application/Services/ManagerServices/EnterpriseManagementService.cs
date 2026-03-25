@@ -61,11 +61,12 @@ namespace FinanceSystem.Application.Services.ManagerServices
 
             await _unitOfWork.SaveChangesAsync();
         }
-        public async Task<List<(Enterprise Enterprise, List<Client> Employees)>> GetAllEnterprisesWithEmployees()
+        public async Task<List<(Enterprise, List<Client>)>> GetAllEnterprisesWithEmployees()
         {
             var enterprises = await _unitOfWork.Enterprises.GetAllAsync();
             if (enterprises == null)
-                enterprises = new List<Enterprise>();
+                throw new InvalidOperationException("Enterprise not found");
+
             var result = new List<(Enterprise, List<Client>)>();
 
             foreach (var enterprise in enterprises)

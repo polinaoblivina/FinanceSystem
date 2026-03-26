@@ -18,7 +18,6 @@ namespace FInanceSystem.Domain.Enums
         Reject,
         ReceiveSalary,
         AccrueInterest,
-        Login,
-        Logout
+        Revert
     }
 }

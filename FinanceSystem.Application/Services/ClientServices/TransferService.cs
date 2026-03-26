@@ -5,6 +5,7 @@ using FInanceSystem.Domain.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,6 +22,9 @@ namespace FinanceSystem.Application.Services.ClientServices
 
         public async Task TransferAccountToAccount(Guid clientId, string fromAccountNumber, string toAccountNumber, decimal amount)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
 
             var from = await _unitOfWork.Accounts.GetByNumberAsync(fromAccountNumber);
             var to = await _unitOfWork.Accounts.GetByNumberAsync(toAccountNumber);
@@ -40,12 +44,16 @@ namespace FinanceSystem.Application.Services.ClientServices
             var transaction = Transaction.CreateNew(from.Id, to.Id ,amount, TransactionType.TransferAccountToAccount );
             await _unitOfWork.Transactions.AddAsync(transaction);
 
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, from.Id, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.CreateTransferLog(clientId, ActionType.Transfer, transaction.Id, LogTargetType.Transaction,$"Account {from.Number}", $"Account {to.Number}", amount));
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task TransferAccountToDeposit(Guid clientId, string accountNumber, string depositNumber, decimal amount)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
 
@@ -60,13 +68,18 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var transaction = Transaction.CreateNew( account.Id, deposit.Id, amount, TransactionType.TransferAccountToDeposit);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, account.Id, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.CreateTransferLog(clientId, ActionType.Transfer, transaction.Id, LogTargetType.Transaction, $"Account {account.Number}", $"Deposit {deposit.Number}", amount));
+
 
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task TransferDepositToAccount(Guid clientId, string depositNumber, string accountNumber, decimal amount)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
 
@@ -81,13 +94,18 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var transaction = Transaction.CreateNew(deposit.Id, account.Id, amount, TransactionType.TransferDepositToAccount);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, deposit.Id, LogTargetType.Deposit));
+
+            await _unitOfWork.Logs.AddAsync(SystemLog.CreateTransferLog(clientId, ActionType.Transfer, transaction.Id, LogTargetType.Transaction,  $"Deposit {deposit.Number}", $"Account {account.Number}", amount));
 
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task TransferDepositToDeposit(Guid clientId, string fromDepositNumber, string toDepositNumber, decimal amount)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var from = await _unitOfWork.Deposits.GetByNumberAsync(fromDepositNumber);
             var to = await _unitOfWork.Deposits.GetByNumberAsync(toDepositNumber);
 
@@ -105,7 +123,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var transaction = Transaction.CreateNew(from.Id, to.Id, amount, TransactionType.TransferDepositToDeposit);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Transfer, from.Id, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.CreateTransferLog(clientId, ActionType.Transfer, transaction.Id, LogTargetType.Transaction, $"Deposit {from.Number}", $"Deposit {to.Number}", amount));
 
             await _unitOfWork.SaveChangesAsync();
         }

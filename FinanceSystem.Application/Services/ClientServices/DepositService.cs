@@ -21,6 +21,10 @@ namespace FinanceSystem.Application.Services.ClientServices
 
         public async Task<Deposit> CreateDeposit(Guid clientId, string number, decimal amount, double rate, DepositType type)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var account = await _unitOfWork.Accounts.GetByNumberAsync(number);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
@@ -42,6 +46,10 @@ namespace FinanceSystem.Application.Services.ClientServices
 
         public async Task CloseDeposit(Guid clientId, string depositNumber, string accountNumber)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             if (deposit == null)
                 throw new InvalidOperationException("Deposit not found");
@@ -61,13 +69,17 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var transaction = Transaction.CreateNew(deposit.Id, account.Id, amount, TransactionType.TransferDepositToAccount);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Close, deposit.Id, LogTargetType.Deposit));
+            await _unitOfWork.Logs.AddAsync(SystemLog.CreateTransferLog(clientId, ActionType.Close, deposit.Id, LogTargetType.Deposit, $"Deposit {deposit.Number}", $"Account {account.Number}", amount));
 
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task AccrueInterest(Guid clientId, string depositNumber)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
 
             if (deposit == null)
@@ -80,6 +92,14 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.AccrueInterest, deposit.Id, LogTargetType.Deposit));
             await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task<List<Deposit>> GetClientDeposits(Guid clientId)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
+            return await _unitOfWork.Deposits.GetByClientIdAsync(clientId);
         }
     }
 }

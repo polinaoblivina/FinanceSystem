@@ -72,5 +72,27 @@ namespace FinanceSystem.Application.Services.ManagerServices
 
             return await _unitOfWork.Transactions.GetByAccountIdAsync(account.Id);
         }
+
+        public async Task<List<Account>> GetClientAccounts(string clientLogin)
+        {
+            var user = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
+            if (user == null)
+                throw new InvalidOperationException($"Client not found");
+            if (user is not Client client)
+                throw new InvalidOperationException($"User  is not a client");
+
+            return await _unitOfWork.Accounts.GetByClientIdAsync(client.Id);
+        }
+
+        public async Task<List<Deposit>> GetClientDeposits(string clientLogin)
+        {
+            var user = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
+            if (user == null)
+                throw new InvalidOperationException($"Client not found");
+            if (user is not Client client)
+                throw new InvalidOperationException($"User is not a client");
+
+            return await _unitOfWork.Deposits.GetByClientIdAsync(client.Id);
+        }
     }
 }

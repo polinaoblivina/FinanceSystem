@@ -70,10 +70,16 @@ namespace FInanceSystem.Domain.Entities
 
             Status = AccountStatus.Active;
         }
+        public void Reopen()
+        {
+            if (Status != AccountStatus.Closed)
+                throw new InvalidOperationException("Only closed accounts can be reopened");
+            Status = AccountStatus.Active;
+        }
 
         public void IncreaseBalance(decimal amount)
         {
-            if (Status != AccountStatus.Active)
+            if (Status != AccountStatus.Active && Status != AccountStatus.Blocked)
                 throw new InvalidOperationException("Account is not active");
             if (amount <= 0)
                 throw new ArgumentException("Invalid amount", nameof(amount));

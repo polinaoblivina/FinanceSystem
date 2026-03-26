@@ -30,5 +30,13 @@ namespace FInanceSystem.Domain.Entities
 
             IsApprovedByManager = true;
         }
+
+        public void RevokeApproval()
+        {
+            if (!IsApprovedByManager)
+                throw new InvalidOperationException("Client is not approved");
+
+            IsApprovedByManager = false;
+        }
     }
 }

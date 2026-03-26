@@ -20,9 +20,17 @@ namespace FinanceSystem.Application.Services.ClientServices
         }
         public async Task RequestSalaryProject(Guid clientId, string enterpriseName)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
+
+            var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
+            if (employment == null)
+                throw new InvalidOperationException($"You are not employed at {enterpriseName}.");
 
             var existing = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
             if (existing != null)
@@ -31,13 +39,16 @@ namespace FinanceSystem.Application.Services.ClientServices
             var request = SalaryProjectRequest.CreateNew(clientId, enterprise.Id);
 
             await _unitOfWork.SalaryRequests.AddAsync(request);
-
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.Create, request.Id, LogTargetType.SalaryProjectRequest));
             await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task ReceiveSalary(Guid clientId, string enterpriseName, string accountNumber, decimal amount)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
 
             if (account == null)
@@ -48,6 +59,10 @@ namespace FinanceSystem.Application.Services.ClientServices
             var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
                 throw new InvalidOperationException("Enterprise not found");
+
+            var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
+            if (employment == null)
+                throw new InvalidOperationException($"You are not employed at {enterpriseName}.");
 
             var request = await _unitOfWork.SalaryRequests.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
 
@@ -62,7 +77,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var transaction = Transaction.CreateNew(enterprise.Id, account.Id, amount, TransactionType.SalaryPayment);
             await _unitOfWork.Transactions.AddAsync(transaction);
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(clientId, ActionType.ReceiveSalary, account.Id, LogTargetType.Account));
+            await _unitOfWork.Logs.AddAsync(SystemLog.CreateTransferLog(clientId,ActionType.ReceiveSalary,transaction.Id,LogTargetType.Transaction, $"Enterprise {enterprise.Name}", $"Account {account.Number}",amount));
 
             await _unitOfWork.SaveChangesAsync();
         }

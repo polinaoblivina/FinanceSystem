@@ -20,6 +20,10 @@ namespace FinanceSystem.Application.Services.ClientServices
         }
         public async Task<Account> OpenAccount(Guid clientId, string bankName)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+            
             var bank = await _unitOfWork.Banks.GetByNameAsync(bankName);
             if (bank == null)
                 throw new InvalidOperationException("Bank not found");
@@ -34,6 +38,10 @@ namespace FinanceSystem.Application.Services.ClientServices
 
         public async Task CloseAccount(Guid clientId, string accountNumber)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
@@ -47,6 +55,10 @@ namespace FinanceSystem.Application.Services.ClientServices
         }
         public async Task<List<Transaction>> GetTransactions(Guid clientId, string accountNumber)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
                 throw new InvalidOperationException("Account not found");
@@ -54,6 +66,14 @@ namespace FinanceSystem.Application.Services.ClientServices
                 throw new InvalidOperationException("Not your account");
 
             return await _unitOfWork.Transactions.GetByAccountIdAsync(account.Id);
+        }
+        public async Task<List<Account>> GetClientAccounts(Guid clientId)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(clientId);
+            if (user is Client client && !client.IsApprovedByManager)
+                throw new UnauthorizedAccessException("Your account is not approved by manager yet.");
+
+            return await _unitOfWork.Accounts.GetByClientIdAsync(clientId);
         }
     }
 }

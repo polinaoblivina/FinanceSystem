@@ -30,18 +30,12 @@ namespace FinanceSystem.Application.Services.Common
             if (user.Password != password)
                 throw new UnauthorizedAccessException("Invalid password");
 
-
-            var log = SystemLog.Create(user.Id, ActionType.Login);
-            await _unitOfWork.Logs.AddAsync(log);
-            await _unitOfWork.SaveChangesAsync();
-
             return user;
         }
 
         public async Task Logout(Guid userId)
         {
-            await _unitOfWork.Logs.AddAsync(SystemLog.Create(userId, ActionType.Logout));
-            await _unitOfWork.SaveChangesAsync();
+            //await _unitOfWork.SaveChangesAsync();
         }
     }
 }

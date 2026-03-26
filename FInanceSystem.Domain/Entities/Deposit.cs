@@ -35,7 +35,7 @@ namespace FInanceSystem.Domain.Entities
                 throw new ArgumentException("Invalid bank id", nameof(bankId));
             if (balance < 0)
                 throw new ArgumentException("Invalid amount", nameof(balance));
-            if (interestRate < 0)
+            if (interestRate <= 0 || interestRate >= 100)
                 throw new ArgumentException("Invalid interest rate", nameof(interestRate));
 
             Id = id;
@@ -58,14 +58,18 @@ namespace FInanceSystem.Domain.Entities
             return new Deposit(id, number, clientId, bankId, balance, interestRate, depositType, status, lastInterestDate);
         }
 
-        public void Close()
+        public void Close(bool accrueInterest = true)
         {
             if (Status != DepositStatus.Active)
                 throw new InvalidOperationException("Only active deposits can be closed");
-            AccrueInterest();
+
+            if (accrueInterest)
+                AccrueInterest();
 
             Status = DepositStatus.Closed;
+            Balance = 0;
         }
+
         public void Block()
         {
             if (Status != DepositStatus.Active)
@@ -78,14 +82,18 @@ namespace FInanceSystem.Domain.Entities
                 throw new InvalidOperationException("Only blocked deposits can be unblocked.");
             Status = DepositStatus.Active;
         }
+        public void Reopen()
+        {
+            if (Status != DepositStatus.Closed)
+                throw new InvalidOperationException("Only closed deposits can be reopened");
+            Status = DepositStatus.Active;
+        }
         public void IncreaseBalance(decimal amount)
         {
             if (amount <= 0)
                 throw new ArgumentException("Invalid amount", nameof(amount));
-            if (Status != DepositStatus.Active)
+            if (Status != DepositStatus.Active && Status != DepositStatus.Blocked)
                 throw new InvalidOperationException("Deposit not active");
-            if (Type != DepositType.OpenDeposit)
-                throw new InvalidOperationException("This deposit does not allow replenishment");
 
             Balance += amount;
         }
@@ -112,14 +120,13 @@ namespace FInanceSystem.Domain.Entities
 
             var days = (DateTime.UtcNow - LastInterestDate).Days;
 
-            if (days <= 0)
-                throw new InvalidOperationException("Interest already accrued");
-
-            decimal dailyRate = (decimal)InterestRate / 365m;
-            decimal interest = Balance * dailyRate * days;
-
-            Balance += interest;
-            LastInterestDate = DateTime.UtcNow;
+            if (days > 0)
+            {
+                decimal dailyRate = (decimal)InterestRate / 365m;
+                decimal interest = Balance * dailyRate * days;
+                Balance += interest;
+                LastInterestDate = DateTime.UtcNow;
+            }
         }
     }
 }

@@ -29,6 +29,7 @@ namespace FInanceSystem.Domain.Entities
                 throw new ArgumentException("Invalid enterprise id", nameof(enterpriseId));
 
             Id = id;
+            Number = number;
             ClientId = clientId;
             EnterpriseId = enterpriseId;
             Status = status;

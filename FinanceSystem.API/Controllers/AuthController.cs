@@ -52,10 +52,10 @@ namespace FinanceSystem.API.Controllers
             var token = new JwtSecurityToken(
                 claims: new[]
                 {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Login),
-            new Claim(ClaimTypes.Role, user is Client ? "Client" :
-                                      user is Admin ? "Admin" : "Manager")
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.Login),
+                    new Claim(ClaimTypes.Role, user is Client ? "Client" :
+                                              user is Admin ? "Admin" : "Manager")
                 },
                 expires: DateTime.UtcNow.AddHours(24),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)

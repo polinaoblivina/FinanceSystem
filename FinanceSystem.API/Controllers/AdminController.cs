@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceSystem.API.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = Roles.Admin)]
     public class AdminController : ControllerBase
     {
         private readonly ActionRevertService _actionRevertService;

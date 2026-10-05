@@ -1,24 +1,22 @@
-﻿using FinanceSystem.Application.Services.Common;
-using FInanceSystem.Domain.Entities;
+using FinanceSystem.API.Services;
+using FinanceSystem.Application.Services.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace FinanceSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;
-        private readonly IConfiguration _configuration;
+        private readonly JwtTokenService _jwtTokenService;
 
-        public AuthController(AuthService authService, IConfiguration configuration)
+        public AuthController(AuthService authService, JwtTokenService jwtTokenService)
         {
             _authService = authService;
-            _configuration = configuration;
+            _jwtTokenService = jwtTokenService;
         }
 
         [HttpPost("login")]
@@ -27,50 +25,20 @@ namespace FinanceSystem.API.Controllers
             try
             {
                 var user = await _authService.Login(login, password);
-
-                var token = GenerateJwtToken(user);
+                var (token, expiresAt) = _jwtTokenService.GenerateToken(user);
 
                 return Ok(new
                 {
-                    token = token,
+                    token,
+                    expiresAt,
                     userId = user.Id,
                     login = user.Login,
-                    role = user is Client ? "Client" :
-                           user is Admin ? "Admin" : "Manager"
+                    role = JwtTokenService.GetRole(user)
                 });
             }
-            catch (Exception ex)
+            catch (UnauthorizedAccessException ex)
             {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-
-            var token = new JwtSecurityToken(
-                claims: new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Login),
-                    new Claim(ClaimTypes.Role, user is Client ? "Client" :
-                                              user is Admin ? "Admin" : "Manager")
-                },
-                expires: DateTime.UtcNow.AddHours(24),
-                signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout(Guid userId)
-        {
-            try
-            {
-                await _authService.Logout(userId);
-                return Ok();
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {

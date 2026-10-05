@@ -12,6 +12,7 @@ namespace FinanceSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = Roles.Manager)]
     public class ManagerController : ControllerBase
     {
         private readonly AccountControlService _accountControlService;

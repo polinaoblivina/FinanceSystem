@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 
 namespace FinanceSystem.API.Services
 {
@@ -13,17 +13,11 @@ namespace FinanceSystem.API.Services
 
         public Guid GetCurrentUserId()
         {
-            var header = _httpContextAccessor.HttpContext?.Request.Headers["X-UserId"].FirstOrDefault();
-            if (header != null && Guid.TryParse(header, out var userId))
+            var value = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (value != null && Guid.TryParse(value, out var userId))
                 return userId;
 
-            throw new UnauthorizedAccessException("User ID not found in request.");
-        }
-
-        public string GetCurrentUserRole()
-        {
-            var claim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role);
-            return claim?.Value ?? "Client";
+            throw new UnauthorizedAccessException("User is not authenticated.");
         }
     }
 }

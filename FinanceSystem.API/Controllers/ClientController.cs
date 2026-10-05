@@ -10,6 +10,7 @@ namespace FinanceSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = Roles.Client)]
     public class ClientController : ControllerBase
     {
         private readonly ClientRegistrationService _clientRegistrationService;
@@ -31,6 +32,7 @@ namespace FinanceSystem.API.Controllers
             _currentUserService = currentUserService;
         }
 
+        [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(string login, string password, string firstName, string lastName)
         {
@@ -45,6 +47,7 @@ namespace FinanceSystem.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("banks")]
         public async Task<IActionResult> GetBanks()
         {
@@ -59,6 +62,7 @@ namespace FinanceSystem.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("enterprises")]
         public async Task<IActionResult> GetEnterprises()
         {

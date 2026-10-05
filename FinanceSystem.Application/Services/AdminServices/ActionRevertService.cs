@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -23,7 +24,7 @@ namespace FinanceSystem.Application.Services.AdminServices
         {
             var log = await _unitOfWork.Logs.GetByNumberAsync(logNumber);
             if (log == null)
-                throw new InvalidOperationException($"Log with number {logNumber} not found");
+                throw new NotFoundException($"Log with number {logNumber} not found");
             if (log.Action == ActionType.Revert)
                 throw new InvalidOperationException("Cannot revert a revert action");
 
@@ -74,7 +75,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Account:
                     var account = await _unitOfWork.Accounts.GetByIdAsync(log.TargetId.Value);
                     if (account == null)
-                        throw new InvalidOperationException($"Account with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Account with id {log.TargetId.Value} not found");
 
                     account.Close();
                     await _unitOfWork.Accounts.UpdateAsync(account);
@@ -83,7 +84,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Deposit:
                     var deposit = await _unitOfWork.Deposits.GetByIdAsync(log.TargetId.Value);
                     if (deposit == null)
-                        throw new InvalidOperationException($"Deposit with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Deposit with id {log.TargetId.Value} not found");
 
                     deposit.Close(false);
                     await _unitOfWork.Deposits.UpdateAsync(deposit);
@@ -92,7 +93,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.SalaryProjectRequest:
                     var request = await _unitOfWork.SalaryRequests.GetByIdAsync(log.TargetId.Value);
                     if (request == null)
-                        throw new InvalidOperationException($"Salary request with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Salary request with id {log.TargetId.Value} not found");
 
                     request.Reject();
                     await _unitOfWork.SalaryRequests.UpdateAsync(request);
@@ -110,7 +111,7 @@ namespace FinanceSystem.Application.Services.AdminServices
 
             var transaction = await _unitOfWork.Transactions.GetByIdAsync(log.TargetId.Value);
             if (transaction == null)
-                throw new InvalidOperationException($"Transaction with id {log.TargetId.Value} not found");
+                throw new NotFoundException($"Transaction with id {log.TargetId.Value} not found");
 
             if (transaction.FromId == Guid.Empty)
                 throw new InvalidOperationException($"Transaction {transaction.Id} has empty FromId");
@@ -134,7 +135,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Source entity with id {transaction.FromId} not found (neither account nor deposit)");
+                    throw new NotFoundException($"Source entity with id {transaction.FromId} not found (neither account nor deposit)");
                 }
             }
 
@@ -154,7 +155,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 }
                 else
                 {
-                    throw new InvalidOperationException($"Target entity with id {transaction.ToId} not found (neither account nor deposit)");
+                    throw new NotFoundException($"Target entity with id {transaction.ToId} not found (neither account nor deposit)");
                 }
             }
         }
@@ -168,7 +169,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Account:
                     var account = await _unitOfWork.Accounts.GetByIdAsync(log.TargetId.Value);
                     if (account == null)
-                        throw new InvalidOperationException($"Account with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Account with id {log.TargetId.Value} not found");
 
                     account.Reopen();
                     await _unitOfWork.Accounts.UpdateAsync(account);
@@ -177,7 +178,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Deposit:
                     var deposit = await _unitOfWork.Deposits.GetByIdAsync(log.TargetId.Value);
                     if (deposit == null)
-                        throw new InvalidOperationException($"Deposit with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Deposit with id {log.TargetId.Value} not found");
 
                     deposit.Reopen();
 
@@ -210,7 +211,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Account:
                     var account = await _unitOfWork.Accounts.GetByIdAsync(log.TargetId.Value);
                     if (account == null)
-                        throw new InvalidOperationException($"Account with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Account with id {log.TargetId.Value} not found");
 
                     account.Unblock();
                     await _unitOfWork.Accounts.UpdateAsync(account);
@@ -219,7 +220,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Deposit:
                     var deposit = await _unitOfWork.Deposits.GetByIdAsync(log.TargetId.Value);
                     if (deposit == null)
-                        throw new InvalidOperationException($"Deposit with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Deposit with id {log.TargetId.Value} not found");
 
                     deposit.Unblock(); 
                     await _unitOfWork.Deposits.UpdateAsync(deposit);
@@ -239,7 +240,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Account:
                     var account = await _unitOfWork.Accounts.GetByIdAsync(log.TargetId.Value);
                     if (account == null)
-                        throw new InvalidOperationException($"Account with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Account with id {log.TargetId.Value} not found");
 
                     account.Block(); 
                     await _unitOfWork.Accounts.UpdateAsync(account);
@@ -248,7 +249,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Deposit:
                     var deposit = await _unitOfWork.Deposits.GetByIdAsync(log.TargetId.Value);
                     if (deposit == null)
-                        throw new InvalidOperationException($"Deposit with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Deposit with id {log.TargetId.Value} not found");
 
                     deposit.Block(); 
                     await _unitOfWork.Deposits.UpdateAsync(deposit);
@@ -268,7 +269,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.Client:
                     var user = await _unitOfWork.Users.GetByIdAsync(log.TargetId.Value);
                     if (user == null)
-                        throw new InvalidOperationException($"User with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"User with id {log.TargetId.Value} not found");
 
                     if (user is not Client client)
                         throw new InvalidOperationException($"User with id {log.TargetId.Value} is not a client");
@@ -280,7 +281,7 @@ namespace FinanceSystem.Application.Services.AdminServices
                 case LogTargetType.SalaryProjectRequest:
                     var request = await _unitOfWork.SalaryRequests.GetByIdAsync(log.TargetId.Value);
                     if (request == null)
-                        throw new InvalidOperationException($"Salary request with id {log.TargetId.Value} not found");
+                        throw new NotFoundException($"Salary request with id {log.TargetId.Value} not found");
 
                     request.Reject();
                     await _unitOfWork.SalaryRequests.UpdateAsync(request);
@@ -301,7 +302,7 @@ namespace FinanceSystem.Application.Services.AdminServices
 
             var request = await _unitOfWork.SalaryRequests.GetByIdAsync(log.TargetId.Value);
             if (request == null)
-                throw new InvalidOperationException($"Salary request with id {log.TargetId.Value} not found");
+                throw new NotFoundException($"Salary request with id {log.TargetId.Value} not found");
 
             request.Approve(); 
             await _unitOfWork.SalaryRequests.UpdateAsync(request);
@@ -314,14 +315,14 @@ namespace FinanceSystem.Application.Services.AdminServices
 
             var transaction = await _unitOfWork.Transactions.GetByIdAsync(log.TargetId.Value);
             if (transaction == null)
-                throw new InvalidOperationException($"Transaction with id {log.TargetId.Value} not found");
+                throw new NotFoundException($"Transaction with id {log.TargetId.Value} not found");
 
             if (transaction.ToId == Guid.Empty)
                 throw new InvalidOperationException($"Transaction {transaction.Id} has empty ToId");
 
             var account = await _unitOfWork.Accounts.GetByIdAsync(transaction.ToId);
             if (account == null)
-                throw new InvalidOperationException($"Account with id {transaction.ToId} not found");
+                throw new NotFoundException($"Account with id {transaction.ToId} not found");
 
             account.DecreaseBalance(transaction.Amount);
             await _unitOfWork.Accounts.UpdateAsync(account);

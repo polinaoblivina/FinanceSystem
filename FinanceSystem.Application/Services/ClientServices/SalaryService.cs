@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -26,7 +27,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
-                throw new InvalidOperationException("Enterprise not found");
+                throw new NotFoundException("Enterprise not found");
 
             var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
             if (employment == null)
@@ -52,13 +53,13 @@ namespace FinanceSystem.Application.Services.ClientServices
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
 
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
             var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
-                throw new InvalidOperationException("Enterprise not found");
+                throw new NotFoundException("Enterprise not found");
 
             var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(clientId, enterprise.Id);
             if (employment == null)

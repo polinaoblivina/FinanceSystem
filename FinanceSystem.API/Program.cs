@@ -1,3 +1,4 @@
+using FinanceSystem.API.Infrastructure;
 using FinanceSystem.API.Services;
 using FinanceSystem.Application.Services.AdminServices;
 using FinanceSystem.Application.Services.ClientServices;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,7 +39,12 @@ builder.Services.AddScoped<SalaryService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<SeedService>();
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUserService>();
@@ -86,6 +93,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 using (var scope = app.Services.CreateScope())
 {

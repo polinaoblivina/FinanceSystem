@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -27,7 +28,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var account = await _unitOfWork.Accounts.GetByNumberAsync(number);
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
             if (account.ClientId != clientId)
                 throw new UnauthorizedAccessException("This account does not belong to you");
 
@@ -52,13 +53,13 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             if (deposit == null)
-                throw new InvalidOperationException("Deposit not found");
+                throw new NotFoundException("Deposit not found");
             if (deposit.ClientId != clientId)
                 throw new InvalidOperationException("Not your deposit");
 
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
@@ -83,7 +84,7 @@ namespace FinanceSystem.Application.Services.ClientServices
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
 
             if (deposit == null)
-                throw new InvalidOperationException("Deposit not found");
+                throw new NotFoundException("Deposit not found");
 
             if (deposit.ClientId != clientId)
                 throw new UnauthorizedAccessException("This deposit does not belong to you");

@@ -1,7 +1,7 @@
-﻿using FinanceSystem.API.Services;
+using FinanceSystem.API.Contracts;
+using FinanceSystem.API.Services;
 using FinanceSystem.Application.Services.AdminServices;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceSystem.API.Controllers
@@ -23,32 +23,18 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpGet("logs")]
-        public async Task<IActionResult> GetLogs()
+        public async Task<ActionResult<List<LogResponse>>> GetLogs()
         {
-            try
-            {
-                var logs = await _logViewerService.GetAllLogs();
-                return Ok(logs);
-            }
-            catch (Exception ex) 
-            {
-                return BadRequest(ex.Message);
-            }
+            var logs = await _logViewerService.GetAllLogs();
+            return Ok(logs.Select(LogResponse.From).ToList());
         }
 
         [HttpPost("revert-action")]
-        public async Task<IActionResult> RevertAction(string logNumber)
+        public async Task<IActionResult> RevertAction(RevertActionRequest request)
         {
-            try
-            {
-                var adminId = _currentUserService.GetCurrentUserId();
-                await _actionRevertService.RevertByLogId(adminId, logNumber);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var adminId = _currentUserService.GetCurrentUserId();
+            await _actionRevertService.RevertByLogId(adminId, request.LogNumber);
+            return NoContent();
         }
     }
 }

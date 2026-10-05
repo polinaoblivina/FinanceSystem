@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -27,7 +28,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var user = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
             if (user == null)
-                throw new InvalidOperationException("User not found");
+                throw new NotFoundException("User not found");
             if (user is not Client client)
                 throw new InvalidOperationException("User is not a client");
 

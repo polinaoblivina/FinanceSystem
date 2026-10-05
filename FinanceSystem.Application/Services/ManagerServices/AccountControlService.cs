@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -21,7 +22,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
 
             account.Block();
 
@@ -33,7 +34,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
 
             account.Unblock();
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Unblock, account.Id, LogTargetType.Account));
@@ -45,7 +46,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             if (deposit == null)
-                throw new InvalidOperationException("Deposit not found");
+                throw new NotFoundException("Deposit not found");
 
             deposit.Block();
 
@@ -57,7 +58,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
             if (deposit == null)
-                throw new InvalidOperationException("Deposit not found");
+                throw new NotFoundException("Deposit not found");
 
             deposit.Unblock();
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Unblock, deposit.Id, LogTargetType.Deposit));
@@ -68,7 +69,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
 
             return await _unitOfWork.Transactions.GetByAccountIdAsync(account.Id);
         }
@@ -77,7 +78,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var user = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
             if (user == null)
-                throw new InvalidOperationException($"Client not found");
+                throw new NotFoundException($"Client not found");
             if (user is not Client client)
                 throw new InvalidOperationException($"User  is not a client");
 
@@ -88,7 +89,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var user = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
             if (user == null)
-                throw new InvalidOperationException($"Client not found");
+                throw new NotFoundException($"Client not found");
             if (user is not Client client)
                 throw new InvalidOperationException($"User is not a client");
 

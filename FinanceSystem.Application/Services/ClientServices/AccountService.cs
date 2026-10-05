@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Repositories;
 using FInanceSystem.Domain.Interfaces;
@@ -26,7 +27,7 @@ namespace FinanceSystem.Application.Services.ClientServices
             
             var bank = await _unitOfWork.Banks.GetByNameAsync(bankName);
             if (bank == null)
-                throw new InvalidOperationException("Bank not found");
+                throw new NotFoundException("Bank not found");
 
             var account = Account.CreateNew(clientId, bank.Id);
             await _unitOfWork.Accounts.AddAsync(account);
@@ -44,7 +45,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 
@@ -61,7 +62,7 @@ namespace FinanceSystem.Application.Services.ClientServices
 
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
             if (account == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
 

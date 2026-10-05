@@ -1,3 +1,4 @@
+using FinanceSystem.API.Contracts;
 using FinanceSystem.API.Services;
 using FinanceSystem.Application.Services.Common;
 using Microsoft.AspNetCore.Authorization;
@@ -20,29 +21,20 @@ namespace FinanceSystem.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(string login, string password)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
         {
             try
             {
-                var user = await _authService.Login(login, password);
+                var user = await _authService.Login(request.Login, request.Password);
                 var (token, expiresAt) = _jwtTokenService.GenerateToken(user);
 
-                return Ok(new
-                {
-                    token,
-                    expiresAt,
-                    userId = user.Id,
-                    login = user.Login,
-                    role = JwtTokenService.GetRole(user)
-                });
+                return Ok(new LoginResponse(token, expiresAt, user.Id, user.Login!, JwtTokenService.GetRole(user)));
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                return Unauthorized(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
+                return Problem(statusCode: StatusCodes.Status401Unauthorized, title: "Unauthorized", detail: "Invalid login or password.");
             }
         }
     }

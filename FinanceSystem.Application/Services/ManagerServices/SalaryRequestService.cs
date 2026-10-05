@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -22,7 +23,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var request = await _unitOfWork.SalaryRequests.GetByNumberAsync(requestNumber);
             if (request == null)
-                throw new InvalidOperationException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.Approve();
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Approve, request.Id, LogTargetType.SalaryProjectRequest));
@@ -33,7 +34,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var request = await _unitOfWork.SalaryRequests.GetByNumberAsync(requestNumber);
             if (request == null)
-                throw new InvalidOperationException("Request not found");
+                throw new NotFoundException("Request not found");
 
             request.Reject();
             await _unitOfWork.Logs.AddAsync(SystemLog.Create(managerId, ActionType.Reject, request.Id, LogTargetType.SalaryProjectRequest));

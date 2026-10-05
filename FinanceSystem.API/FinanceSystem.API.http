@@ -1,6 +1,53 @@
-@FinanceSystem.API_HostAddress = http://localhost:5022
+@baseUrl = http://localhost:5022
+@token = paste-token-here
 
-GET {{FinanceSystem.API_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{baseUrl}}/api/Auth/login
+Content-Type: application/json
+
+{
+  "login": "manager",
+  "password": "managerparol"
+}
+
+###
+
+POST {{baseUrl}}/api/Client/register
+Content-Type: application/json
+
+{
+  "login": "ivanov",
+  "password": "secret123",
+  "firstName": "Ivan",
+  "lastName": "Ivanov"
+}
+
+###
+
+GET {{baseUrl}}/api/Client/banks
+
+###
+
+POST {{baseUrl}}/api/Manager/approve-client
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "clientLogin": "ivanov"
+}
+
+###
+
+POST {{baseUrl}}/api/Client/open-account
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bankName": "Bank1"
+}
+
+###
+
+GET {{baseUrl}}/api/Client/accounts
+Authorization: Bearer {{token}}
 
 ###

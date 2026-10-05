@@ -1,9 +1,7 @@
-﻿using FinanceSystem.API.Services;
+using FinanceSystem.API.Contracts;
+using FinanceSystem.API.Services;
 using FinanceSystem.Application.Services.ClientServices;
-using FInanceSystem.Domain.Entities;
-using FInanceSystem.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinanceSystem.API.Controllers
@@ -34,227 +32,141 @@ namespace FinanceSystem.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(string login, string password, string firstName, string lastName)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<ClientResponse>> Register(RegisterRequest request)
         {
-            try
-            {
-                var client = await _clientRegistrationService.Register(login, password, firstName, lastName);
-                return Ok(client);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var client = await _clientRegistrationService.Register(request.Login, request.Password, request.FirstName, request.LastName);
+            return StatusCode(StatusCodes.Status201Created, ClientResponse.From(client));
         }
 
         [AllowAnonymous]
         [HttpGet("banks")]
-        public async Task<IActionResult> GetBanks()
+        public async Task<ActionResult<List<BankResponse>>> GetBanks()
         {
-            try
-            {
-                var banks = await _infoService.GetBanks();
-                return Ok(banks);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var banks = await _infoService.GetBanks();
+            return Ok(banks.Select(BankResponse.From).ToList());
         }
 
         [AllowAnonymous]
         [HttpGet("enterprises")]
-        public async Task<IActionResult> GetEnterprises()
+        public async Task<ActionResult<List<EnterpriseResponse>>> GetEnterprises()
         {
-            try
-            {
-                var enterprises = await _infoService.GetEnterprises();
-                return Ok(enterprises);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var enterprises = await _infoService.GetEnterprises();
+            return Ok(enterprises.Select(EnterpriseResponse.From).ToList());
+        }
+
+        [HttpGet("accounts")]
+        public async Task<ActionResult<List<AccountResponse>>> GetAccounts()
+        {
+            var clientId = _currentUserService.GetCurrentUserId();
+            var accounts = await _accountService.GetClientAccounts(clientId);
+            return Ok(accounts.Select(AccountResponse.From).ToList());
+        }
+
+        [HttpGet("deposits")]
+        public async Task<ActionResult<List<DepositResponse>>> GetDeposits()
+        {
+            var clientId = _currentUserService.GetCurrentUserId();
+            var deposits = await _depositService.GetClientDeposits(clientId);
+            return Ok(deposits.Select(DepositResponse.From).ToList());
         }
 
         [HttpPost("open-account")]
-        public async Task<IActionResult> OpenAccount(string bankName)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<AccountResponse>> OpenAccount(OpenAccountRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                var account = await _accountService.OpenAccount(clientId, bankName);
-                return Ok(account);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            var account = await _accountService.OpenAccount(clientId, request.BankName);
+            return StatusCode(StatusCodes.Status201Created, AccountResponse.From(account));
         }
 
         [HttpPost("close-account")]
-        public async Task<IActionResult> CloseAccount(string accountNumber)
+        public async Task<IActionResult> CloseAccount(AccountNumberRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _accountService.CloseAccount(clientId, accountNumber);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _accountService.CloseAccount(clientId, request.AccountNumber);
+            return NoContent();
         }
 
         [HttpGet("account-transactions")]
-        public async Task<IActionResult> GetAccountTransactions(string accountNumber)
+        public async Task<ActionResult<List<TransactionResponse>>> GetAccountTransactions([FromQuery] string accountNumber)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                var transactions = await _accountService.GetTransactions(clientId, accountNumber);
-                return Ok(transactions);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            var transactions = await _accountService.GetTransactions(clientId, accountNumber);
+            return Ok(transactions.Select(TransactionResponse.From).ToList());
         }
 
         [HttpPost("create-deposit")]
-        public async Task<IActionResult> CreateDeposit(string accountNumber, decimal amount, double rate, DepositType type)
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public async Task<ActionResult<DepositResponse>> CreateDeposit(CreateDepositRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                var deposit = await _depositService.CreateDeposit(clientId, accountNumber, amount, rate, type);
-                return Ok(deposit);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            var deposit = await _depositService.CreateDeposit(clientId, request.AccountNumber, request.Amount, request.Rate, request.Type);
+            return StatusCode(StatusCodes.Status201Created, DepositResponse.From(deposit));
         }
 
         [HttpPost("close-deposit")]
-        public async Task<IActionResult> CloseDeposit(string depositNumber, string accountNumber)
+        public async Task<IActionResult> CloseDeposit(CloseDepositRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _depositService.CloseDeposit(clientId, depositNumber, accountNumber);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _depositService.CloseDeposit(clientId, request.DepositNumber, request.AccountNumber);
+            return NoContent();
         }
 
         [HttpPost("accrue-interest")]
-        public async Task<IActionResult> AccrueInterest(string depositNumber)
+        public async Task<IActionResult> AccrueInterest(DepositNumberRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _depositService.AccrueInterest(clientId, depositNumber);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _depositService.AccrueInterest(clientId, request.DepositNumber);
+            return NoContent();
         }
 
         [HttpPost("transfer-account-to-account")]
-        public async Task<IActionResult> TransferAccountToAccount(string fromAccountNumber, string toAccountNumber, decimal amount)
+        public async Task<IActionResult> TransferAccountToAccount(TransferRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _transferService.TransferAccountToAccount(clientId, fromAccountNumber, toAccountNumber, amount);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _transferService.TransferAccountToAccount(clientId, request.From, request.To, request.Amount);
+            return NoContent();
         }
 
         [HttpPost("transfer-account-to-deposit")]
-        public async Task<IActionResult> TransferAccountToDeposit(string accountNumber, string depositNumber, decimal amount)
+        public async Task<IActionResult> TransferAccountToDeposit(TransferRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _transferService.TransferAccountToDeposit(clientId, accountNumber, depositNumber, amount);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _transferService.TransferAccountToDeposit(clientId, request.From, request.To, request.Amount);
+            return NoContent();
         }
 
         [HttpPost("transfer-deposit-to-account")]
-        public async Task<IActionResult> TransferDepositToAccount(string depositNumber, string accountNumber, decimal amount)
+        public async Task<IActionResult> TransferDepositToAccount(TransferRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _transferService.TransferDepositToAccount(clientId, depositNumber, accountNumber, amount);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _transferService.TransferDepositToAccount(clientId, request.From, request.To, request.Amount);
+            return NoContent();
         }
 
         [HttpPost("transfer-deposit-to-deposit")]
-        public async Task<IActionResult> TransferDepositToDeposit(string fromDepositNumber, string toDepositNumber, decimal amount)
+        public async Task<IActionResult> TransferDepositToDeposit(TransferRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _transferService.TransferDepositToDeposit(clientId, fromDepositNumber, toDepositNumber, amount);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _transferService.TransferDepositToDeposit(clientId, request.From, request.To, request.Amount);
+            return NoContent();
         }
 
         [HttpPost("request-salary-project")]
-        public async Task<IActionResult> RequestSalaryProject(string enterpriseName)
+        public async Task<IActionResult> RequestSalaryProject(EnterpriseRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _salaryService.RequestSalaryProject(clientId, enterpriseName);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _salaryService.RequestSalaryProject(clientId, request.EnterpriseName);
+            return NoContent();
         }
 
         [HttpPost("receive-salary")]
-        public async Task<IActionResult> ReceiveSalary(string enterpriseName, string accountNumber, decimal amount)
+        public async Task<IActionResult> ReceiveSalary(ReceiveSalaryRequest request)
         {
-            try
-            {
-                var clientId = _currentUserService.GetCurrentUserId();
-                await _salaryService.ReceiveSalary(clientId, enterpriseName, accountNumber, amount);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var clientId = _currentUserService.GetCurrentUserId();
+            await _salaryService.ReceiveSalary(clientId, request.EnterpriseName, request.AccountNumber, request.Amount);
+            return NoContent();
         }
     }
 }

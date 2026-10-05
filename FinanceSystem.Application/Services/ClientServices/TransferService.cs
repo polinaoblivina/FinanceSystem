@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -30,7 +31,7 @@ namespace FinanceSystem.Application.Services.ClientServices
             var to = await _unitOfWork.Accounts.GetByNumberAsync(toAccountNumber);
 
             if (from == null || to == null)
-                throw new InvalidOperationException("Account not found");
+                throw new NotFoundException("Account not found");
 
             if (from.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
@@ -58,7 +59,7 @@ namespace FinanceSystem.Application.Services.ClientServices
             var deposit = await _unitOfWork.Deposits.GetByNumberAsync(depositNumber);
 
             if (account == null || deposit == null)
-                throw new InvalidOperationException("Entity not found");
+                throw new NotFoundException("Entity not found");
 
             if (account.ClientId != clientId)
                 throw new InvalidOperationException("Not your account");
@@ -84,7 +85,7 @@ namespace FinanceSystem.Application.Services.ClientServices
             var account = await _unitOfWork.Accounts.GetByNumberAsync(accountNumber);
 
             if (deposit == null || account == null)
-                throw new InvalidOperationException("Entity not found");
+                throw new NotFoundException("Entity not found");
 
             if (deposit.ClientId != clientId)
                 throw new InvalidOperationException("Not your deposit");
@@ -110,7 +111,7 @@ namespace FinanceSystem.Application.Services.ClientServices
             var to = await _unitOfWork.Deposits.GetByNumberAsync(toDepositNumber);
 
             if (from == null || to == null)
-                throw new InvalidOperationException("Deposit not found");
+                throw new NotFoundException("Deposit not found");
 
             if (from.ClientId != clientId)
                 throw new InvalidOperationException("Not your deposit");

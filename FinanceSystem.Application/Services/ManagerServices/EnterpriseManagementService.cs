@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Exceptions;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -21,13 +22,13 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var client = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
             if (client == null)
-                throw new InvalidOperationException("User not found");
+                throw new NotFoundException("User not found");
             if (client is not Client)
                 throw new InvalidOperationException("User is not a client");
 
             var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
-                throw new InvalidOperationException("Enterprise not found");
+                throw new NotFoundException("Enterprise not found");
 
             var existingEmployment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(client.Id, enterprise.Id);
             if (existingEmployment != null)
@@ -44,13 +45,13 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var client = await _unitOfWork.Users.GetByLoginAsync(clientLogin);
             if (client == null)
-                throw new InvalidOperationException("User not found");
+                throw new NotFoundException("User not found");
             if (client is not Client)
                 throw new InvalidOperationException("User is not a client");
 
             var enterprise = await _unitOfWork.Enterprises.GetByNameAsync(enterpriseName);
             if (enterprise == null)
-                throw new InvalidOperationException("Enterprise not found");
+                throw new NotFoundException("Enterprise not found");
 
             var employment = await _unitOfWork.Employments.GetByClientAndEnterpriseAsync(client.Id, enterprise.Id);
             if (employment == null)
@@ -65,7 +66,7 @@ namespace FinanceSystem.Application.Services.ManagerServices
         {
             var enterprises = await _unitOfWork.Enterprises.GetAllAsync();
             if (enterprises == null)
-                throw new InvalidOperationException("Enterprise not found");
+                throw new NotFoundException("Enterprise not found");
 
             var result = new List<(Enterprise, List<Client>)>();
 

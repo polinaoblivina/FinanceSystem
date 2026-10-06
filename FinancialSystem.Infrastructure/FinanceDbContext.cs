@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using FInanceSystem.Domain.Entities;
-using Microsoft.Extensions.Configuration;
 
 namespace FinanceSystem.Infrastructure
 {
@@ -21,10 +15,14 @@ namespace FinanceSystem.Infrastructure
         public DbSet<SalaryProjectRequest> SalaryProjectRequests { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
 
-        public FinanceDbContext()
-            :base()
+        public FinanceDbContext(DbContextOptions<FinanceDbContext> options)
+            : base(options)
         {
-            Database.EnsureCreated();
+        }
+
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,17 +33,5 @@ namespace FinanceSystem.Infrastructure
                 .HasValue<Admin>("Admin")
                 .HasValue<Manager>("Manager");
         }
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            var config = new ConfigurationBuilder()
-                            .AddJsonFile("appsettings.json")
-                            .SetBasePath(Directory.GetCurrentDirectory())
-                            .Build();
-
-            var connectionString = config.GetConnectionString("DefaultConnection");
-            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-        }
     }
 }
-
-

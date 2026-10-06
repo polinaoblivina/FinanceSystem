@@ -3,7 +3,7 @@ using FinanceSystem.Application.Services.ClientServices;
 using FinanceSystem.Application.Services.Common;
 using FinanceSystem.Application.Services.ManagerServices;
 using FinanceSystem.Infrastructure;
-using FInanceSystem.Domain.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using FinanceSystem.UI.Menus;
 
@@ -13,10 +13,16 @@ namespace FinanceSystem.UI
     {
         static async Task Main(string[] args)
         {
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile("appsettings.Development.json", optional: true)
+                .AddEnvironmentVariables()
+                .Build();
+
             var services = new ServiceCollection();
 
-            services.AddDbContext<FinanceDbContext>();
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddInfrastructure(configuration.GetConnectionString("DefaultConnection") ?? string.Empty);
 
             services.AddScoped<LogViewerService>();
             services.AddScoped<ActionRevertService>();
@@ -43,11 +49,8 @@ namespace FinanceSystem.UI
                 var dbContext = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
                 var seedService = scope.ServiceProvider.GetRequiredService<SeedService>();
 
-                if (dbContext.Database.CanConnect())
-                {
-                    dbContext.Database.EnsureCreated();
-                    await seedService.SeedAllData();
-                }
+                await dbContext.Database.EnsureCreatedAsync();
+                await seedService.SeedAllData();
             }
 
             await MainMenu.Show(serviceProvider);

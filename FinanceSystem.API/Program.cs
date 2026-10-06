@@ -5,7 +5,6 @@ using FinanceSystem.Application.Services.ClientServices;
 using FinanceSystem.Application.Services.Common;
 using FinanceSystem.Application.Services.ManagerServices;
 using FinanceSystem.Infrastructure;
-using FInanceSystem.Domain.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -14,8 +13,7 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<FinanceDbContext>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection") ?? string.Empty);
 
 //Admin
 builder.Services.AddScoped<LogViewerService>();
@@ -102,18 +100,8 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
     var seedService = scope.ServiceProvider.GetRequiredService<SeedService>();
 
-    try
-    {
-        if (dbContext.Database.CanConnect())
-        {
-            dbContext.Database.EnsureCreated();
-            await seedService.SeedAllData();
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($" Ошибка: {ex.Message}");
-    }
+    await dbContext.Database.EnsureCreatedAsync();
+    await seedService.SeedAllData();
 }
 
 if (app.Environment.IsDevelopment())

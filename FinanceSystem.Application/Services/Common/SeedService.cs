@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Interfaces;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
 using System;
@@ -12,9 +13,12 @@ namespace FinanceSystem.Application.Services.Common
     public class SeedService
     {
         private readonly IUnitOfWork _unitOfWork;
-        public SeedService(IUnitOfWork unitOfWork)
+        private readonly IPasswordHasher _passwordHasher;
+
+        public SeedService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
         {
             _unitOfWork = unitOfWork;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task SeedAllData()
@@ -53,10 +57,10 @@ namespace FinanceSystem.Application.Services.Common
             var existingUsers = await _unitOfWork.Users.GetAllAsync();
             if (existingUsers.Count == 0)
             {
-                var admin = Admin.CreateNew("admin", "adminparol", "Admin", "Adminovich");
+                var admin = Admin.CreateNew("admin", _passwordHasher.Hash("adminparol"), "Admin", "Adminovich");
                 await _unitOfWork.Users.AddAsync(admin);
 
-                var manager = Manager.CreateNew("manager", "managerparol", "Manager", "Managerovich");
+                var manager = Manager.CreateNew("manager", _passwordHasher.Hash("managerparol"), "Manager", "Managerovich");
                 await _unitOfWork.Users.AddAsync(manager);
             }
         }

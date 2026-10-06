@@ -1,4 +1,5 @@
-﻿using FInanceSystem.Domain.Entities;
+﻿using FinanceSystem.Application.Interfaces;
+using FInanceSystem.Domain.Entities;
 using FInanceSystem.Domain.Enums;
 using FInanceSystem.Domain.Interfaces;
 using FInanceSystem.Domain.Repositories;
@@ -8,10 +9,12 @@ namespace FinanceSystem.Application.Services.Common
     public class AuthService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public AuthService(IUnitOfWork unitOfWork)
+        public AuthService(IUnitOfWork unitOfWork, IPasswordHasher passwordHasher)
         {
             _unitOfWork = unitOfWork;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<User> Login(string login, string password)
@@ -27,15 +30,10 @@ namespace FinanceSystem.Application.Services.Common
             if (user == null)
                 throw new UnauthorizedAccessException("User not found");
 
-            if (user.Password != password)
+            if (user.Password == null || !_passwordHasher.Verify(password, user.Password))
                 throw new UnauthorizedAccessException("Invalid password");
 
             return user;
-        }
-
-        public async Task Logout(Guid userId)
-        {
-            //await _unitOfWork.SaveChangesAsync();
         }
     }
 }

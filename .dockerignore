@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/appsettings.Development.json
+**/appsettings.Production.json
+.git/
+.env
+FinanceSystem.UI/
+Dockerfile
+docker-compose.yml
+README.md

@@ -5,17 +5,25 @@ COPY FInanceSystem.Domain/FInanceSystem.Domain.csproj FInanceSystem.Domain/
 COPY FinanceSystem.Application/FinanceSystem.Application.csproj FinanceSystem.Application/
 COPY FinancialSystem.Infrastructure/FinanceSystem.Infrastructure.csproj FinancialSystem.Infrastructure/
 COPY FinanceSystem.API/FinanceSystem.API.csproj FinanceSystem.API/
-RUN dotnet restore FinanceSystem.API/FinanceSystem.API.csproj
+COPY FinanceSystem.Tests/FinanceSystem.Tests.csproj FinanceSystem.Tests/
+RUN dotnet restore FinanceSystem.API/FinanceSystem.API.csproj \
+ && dotnet restore FinanceSystem.Tests/FinanceSystem.Tests.csproj
 
 COPY FInanceSystem.Domain/ FInanceSystem.Domain/
 COPY FinanceSystem.Application/ FinanceSystem.Application/
 COPY FinancialSystem.Infrastructure/ FinancialSystem.Infrastructure/
 COPY FinanceSystem.API/ FinanceSystem.API/
+COPY FinanceSystem.Tests/ FinanceSystem.Tests/
+
+FROM build AS test
+RUN dotnet test FinanceSystem.Tests/FinanceSystem.Tests.csproj -c Release --no-restore
+
+FROM test AS publish
 RUN dotnet publish FinanceSystem.API/FinanceSystem.API.csproj -c Release -o /app/publish --no-restore /p:UseAppHost=false
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
-COPY --from=build /app/publish .
+COPY --from=publish /app/publish .
 
 EXPOSE 8080
 

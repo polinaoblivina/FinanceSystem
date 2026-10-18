@@ -6,7 +6,7 @@
 
 ## Стек
 
-.NET 9, ASP.NET Core Web API, Entity Framework Core, MySQL, JWT, BCrypt, Swagger, Docker.
+.NET 9, ASP.NET Core Web API, Entity Framework Core, MySQL, JWT, BCrypt, Swagger, Docker, xUnit.
 
 ## Структура
 
@@ -15,6 +15,7 @@
 - FinancialSystem.Infrastructure: доступ к данным
 - FinanceSystem.API: REST API
 - FinanceSystem.UI: консольное приложение
+- FinanceSystem.Tests: модульные и интеграционные тесты
 
 ## Запуск через Docker
 
@@ -26,6 +27,8 @@ docker compose up -d --build
 В файле .env нужно задать свои пароли и ключ JWT длиной не меньше 32 символов.
 
 Swagger: http://localhost:8080/swagger
+
+При сборке образа сначала запускаются тесты. Если хотя бы один тест не проходит, образ не собирается.
 
 ## Локальный запуск
 
@@ -47,6 +50,26 @@ dotnet run --project FinanceSystem.API
 ```
 
 Swagger: http://localhost:5022/swagger
+
+## Тесты
+
+Тесты написаны на xUnit и лежат в проекте FinanceSystem.Tests:
+
+- Domain: бизнес-правила сущностей (счета, вклады, клиенты, заявки, транзакции, журнал)
+- Services: сценарии клиента, менеджера и администратора, включая переводы, зарплату и откат операций
+- Infrastructure: хеширование паролей через BCrypt
+
+Сервисы проверяются вместе с настоящими репозиториями и UnitOfWork на базе EF Core InMemory, поэтому MySQL для тестов не нужен.
+
+```
+dotnet test
+```
+
+Запустить тесты только в Docker, без сборки API:
+
+```
+docker build --target test .
+```
 
 ## Учётные записи
 
